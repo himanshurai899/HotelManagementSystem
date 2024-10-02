@@ -1,0 +1,30 @@
+﻿@page "/rooms"
+@using HotelManagementSystem.Shared.Models
+@inject ApiClient ApiClient
+
+<PageTitle>Rooms</PageTitle>
+
+<h1>Rooms</h1>
+
+@if (rooms == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <ul>
+        @foreach (var room in rooms)
+        {
+            <li>@room.RoomNumber</li>
+        }
+    </ul>
+}
+
+@code {
+    private Room[]? rooms;
+
+    protected override async Task OnInitializedAsync()
+    {
+        rooms = await ApiClient.GetAsync<Room[]>("rooms");
+    }
+}

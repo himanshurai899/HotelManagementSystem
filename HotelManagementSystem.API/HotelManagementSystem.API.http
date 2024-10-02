@@ -1,0 +1,9 @@
+@HotelManagementSystem.API_HostAddress = http://localhost:5180/api
+
+GET {{HotelManagementSystem.API_HostAddress}}/rooms/
+Accept: application/json
+###
+GET {{HotelManagementSystem.API_HostAddress}}/roles/
+Accept: application/json
+
+###

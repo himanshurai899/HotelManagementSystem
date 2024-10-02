@@ -1,0 +1,5 @@
+﻿-- To Add --
+Add-Migration InitialCreate
+
+-- To Update --
+Update-Database
