@@ -4,6 +4,7 @@ using HotelManagementSystem.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagementSystem.Shared.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250205120923_SeedHotelDetails")]
+    partial class SeedHotelDetails
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -351,7 +353,7 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 1,
                             Email = "admin@example.com",
-                            Password = "$2a$11$TvZOnzqzS11buDP9Va/5JejwvuISK5kh2wXfEtB8ePsQ3h0aa2n2u",
+                            Password = "$2a$11$qAP93g9tp3W5cewrIok4n.b6xkkPgHqwhla18k.E3CxTGMfD2QQgK",
                             RoleId = 1,
                             UserName = "admin"
                         },
@@ -359,7 +361,7 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 2,
                             Email = "guest@example.com",
-                            Password = "$2a$11$nOYIgNYDIb6MYHplYX7dvO3QFIARAL1VoqzhkT/ZFBDB0B3wSzC3G",
+                            Password = "$2a$11$DOS2Nb2sfFtS2k9i90fsFOSc1/UJT1ir/gfh8TBJ2UChbZOR/7oHG",
                             RoleId = 2,
                             UserName = "guest"
                         });
