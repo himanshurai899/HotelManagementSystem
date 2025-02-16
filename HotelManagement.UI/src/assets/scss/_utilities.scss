@@ -1,0 +1,48 @@
+$spacing-values: (
+    hairline: 1px,
+    2x-small: 2px,
+    x-small:  4px,
+    small:    8px,
+    medium:   16px,
+    large:    32px,
+    x-large:  64px,
+    none:     0,
+    auto:     auto
+) !default;
+
+@mixin generate-spacing($property, $prefix){
+    @each $key, $value in $spacing-values {
+        .hm-#{$prefix}-#{$key} {
+            #{$property}: $value;
+        }
+
+        .hm-#{$prefix}v-#{$key} {
+            #{$property}-top: $value;
+            #{$property}-bottom: $value;
+        }
+
+        .hm-#{$prefix}h-#{$key} {
+            #{$property}-right: $value;
+            #{$property}-left: $value;
+        }
+
+        .hm--#{$prefix}b-#{$key} {
+            #{$property}-bottom: $value;
+        }
+
+        .hm--#{$prefix}t-#{$key} {
+            #{$property}-top: $value;
+        }
+
+        .hm--#{$prefix}r-#{$key} {
+            #{$property}-right: $value;
+        }
+
+        .hm--#{$prefix}l-#{$key} {
+            #{$property}-left: $value;
+        }
+    }
+}
+
+@include generate-spacing(margin, 'm');
+@include generate-spacing(padding, 'p');
