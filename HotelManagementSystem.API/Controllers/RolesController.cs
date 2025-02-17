@@ -1,9 +1,11 @@
 ﻿using HotelManagementSystem.Shared.Interfaces;
 using HotelManagementSystem.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagementSystem.API.Controllers
 {
+    [Authorize(Roles = "Administrator")]
     [Route("api/[controller]")]
     [ApiController]
     public class RolesController(IRepository<Role> roleRepository) : ControllerBase

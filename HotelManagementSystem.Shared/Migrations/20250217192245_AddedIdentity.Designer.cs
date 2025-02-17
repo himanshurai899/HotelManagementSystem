@@ -4,6 +4,7 @@ using HotelManagementSystem.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagementSystem.Shared.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250217192245_AddedIdentity")]
+    partial class AddedIdentity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,20 +148,17 @@ namespace HotelManagementSystem.Shared.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Administrator",
-                            NormalizedName = "ADMINISTRATOR"
+                            Name = "Administrator"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "Guest",
-                            NormalizedName = "GUEST"
+                            Name = "Guest"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "Customer",
-                            NormalizedName = "CUSTOMER"
+                            Name = "Customer"
                         });
                 });
 
@@ -306,6 +306,10 @@ namespace HotelManagementSystem.Shared.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
+                    b.Property<string>("Password")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("PasswordHash")
                         .HasColumnType("nvarchar(max)");
 
@@ -349,9 +353,6 @@ namespace HotelManagementSystem.Shared.Migrations
 
                     b.HasIndex("RoleId");
 
-                    b.HasIndex("UserName")
-                        .IsUnique();
-
                     b.ToTable("AspNetUsers", (string)null);
 
                     b.HasData(
@@ -359,12 +360,11 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "91c89de0-dd56-43d8-b663-a361f4bb70e1",
+                            ConcurrencyStamp = "6fed3726-40a3-47bf-8d9d-a82c88e2c247",
                             Email = "admin@example.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
-                            NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEE1v9jn+YSdJz1asa6XAaWlGMH6ELZtjfwUKlRcfsmq4AeogMzefvL4UuWaehiUcKg==",
+                            Password = "admin_password",
                             PhoneNumber = "1234567890",
                             PhoneNumberConfirmed = false,
                             RoleId = 1,
@@ -375,12 +375,11 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "4822fc11-f50f-4789-b252-76f1465d312a",
+                            ConcurrencyStamp = "81097946-77fe-420e-8699-46038ab436dc",
                             Email = "guest@example.com",
                             EmailConfirmed = false,
                             LockoutEnabled = false,
-                            NormalizedUserName = "GUEST",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBcSfsMifuShfqNjRd2K7nI2oFzosZoZqQc0NNMYpPI/nfq7ZIh+uiiMgPqunKd16Q==",
+                            Password = "guest_password",
                             PhoneNumber = "0987654321",
                             PhoneNumberConfirmed = false,
                             RoleId = 2,
@@ -411,43 +410,6 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetRoleClaims", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ClaimType = "Permission",
-                            ClaimValue = "ManageUsers",
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ClaimType = "Permission",
-                            ClaimValue = "ManageRoles",
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ClaimType = "Permission",
-                            ClaimValue = "ManageRooms",
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ClaimType = "Permission",
-                            ClaimValue = "ViewDashboard",
-                            RoleId = 2
-                        },
-                        new
-                        {
-                            Id = 5,
-                            ClaimType = "Permission",
-                            ClaimValue = "MakeBooking",
-                            RoleId = 3
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<int>", b =>
@@ -472,36 +434,6 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("AspNetUserClaims", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ClaimType = "Permission",
-                            ClaimValue = "FullAccess",
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ClaimType = "Department",
-                            ClaimValue = "IT",
-                            UserId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ClaimType = "Permission",
-                            ClaimValue = "LimitedAccess",
-                            UserId = 2
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ClaimType = "Department",
-                            ClaimValue = "Sales",
-                            UserId = 2
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<int>", b =>
@@ -538,18 +470,6 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-
-                    b.HasData(
-                        new
-                        {
-                            UserId = 1,
-                            RoleId = 1
-                        },
-                        new
-                        {
-                            UserId = 2,
-                            RoleId = 2
-                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<int>", b =>
