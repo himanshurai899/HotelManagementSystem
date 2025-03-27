@@ -1,19 +1,17 @@
 ﻿using HotelManagementSystem.Shared.Interfaces;
 using HotelManagementSystem.Shared.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagementSystem.API.Controllers
 {
+    [Authorize(Roles = "Administrator")]
+    [Authorize(Policy = "ManageRooms")]
     [Route("api/[controller]")]
     [ApiController]
-    public class RoomsController : ControllerBase
+    public class RoomsController(IRepository<Room> roomRepository) : ControllerBase
     {
-        private readonly IRepository<Room> _roomRepository;
-
-        public RoomsController(IRepository<Room> roomRepository)
-        {
-            _roomRepository = roomRepository;
-        }
+        private readonly IRepository<Room> _roomRepository = roomRepository;
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Room>>> GetRooms()

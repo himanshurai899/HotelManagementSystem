@@ -1,21 +1,23 @@
-﻿using HotelManagementSystem.Shared.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Identity;
 
 namespace HotelManagementSystem.Shared.Models
 {
-    // User.cs
-    public class User
+    public class User : IdentityUser<int>
     {
-        public int Id { get; set; }
-        public string UserName { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; } // Replace PasswordHash with Password
+        private string _userName;
+
+        public override string UserName
+        {
+            get => _userName;
+            set
+            {
+                _userName = value;
+                NormalizedUserName = value?.ToUpperInvariant();
+            }
+        }
+        public override string PhoneNumber { get; set; }
+        public ICollection<Booking> Bookings { get; set; }
         public int RoleId { get; set; }
         public Role Role { get; set; }
-        public ICollection<Booking> Bookings { get; set; }
     }
 }
