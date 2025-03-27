@@ -1,0 +1,10 @@
+<mat-toolbar class="color-primary">
+    <mat-toolbar-row class="nav-menu">
+        <span>Hotel Management</span>
+        <div>
+            @for(menu of menus; track menu.route){
+                <a [routerLink]="menu.route" mat-button>{{menu.title}}</a>
+            }
+        </div>
+    </mat-toolbar-row>
+</mat-toolbar>
