@@ -32,6 +32,13 @@ namespace HotelManagementSystem.API.Profiles
                 .ReverseMap();
             CreateMap<InvoiceItem, InvoiceItemDTO>().ReverseMap();
             CreateMap<CompanyProfile, CompanyProfileDTO>().ReverseMap();
+
+            // ── Multi-Tenant SaaS (Phase 9) ───────────────────────────────────
+            CreateMap<Tenant, TenantDTO>().ReverseMap();
+            CreateMap<UserTenant, UserTenantDTO>()
+                .ForMember(dest => dest.UserName,   opt => opt.MapFrom(src => src.User != null ? src.User.UserName : string.Empty))
+                .ForMember(dest => dest.TenantName, opt => opt.MapFrom(src => src.Tenant != null ? src.Tenant.Name : string.Empty))
+                .ReverseMap();
         }
     }
 }

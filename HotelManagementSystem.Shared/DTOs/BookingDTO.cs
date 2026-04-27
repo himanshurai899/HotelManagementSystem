@@ -13,5 +13,7 @@ namespace HotelManagementSystem.Shared.DTOs
         public DateTime CheckOutDate { get; set; }
         public decimal TotalPrice { get; set; }
         public BookingStatus Status { get; set; }
+        public int TenantId { get; set; }
+        public string TenantName { get; set; } // To avoid complex object graph
     }
 }

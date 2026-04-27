@@ -42,7 +42,7 @@ export class UsersTabComponent implements OnInit {
 
   displayedColumns = ['username', 'email', 'phone', 'roles', 'claims', 'actions'];
 
-  newUser: CreateUserRequest = { username: '', email: '', phoneNumber: '', password: '', roles: [] };
+  newUser: CreateUserRequest = { username: '', email: '', phoneNumber: '', password: '', firstName: '', lastName: '', roles: [] };
 
   isSuperAdmin = computed(() => this.auth.isSuperAdmin());
 
@@ -63,7 +63,7 @@ export class UsersTabComponent implements OnInit {
     this.api.post<any>('users', this.newUser).subscribe({
       next: () => {
         this.snack.open('User created!', '', { duration: 2000 });
-        this.newUser = { username: '', email: '', phoneNumber: '', password: '', roles: [] };
+        this.newUser = { username: '', email: '', phoneNumber: '', password: '', firstName: '', lastName: '', roles: [] };
         this.showCreate.set(false);
         this.load();
       },

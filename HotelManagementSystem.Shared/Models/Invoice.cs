@@ -16,5 +16,7 @@ namespace HotelManagementSystem.Shared.Models
         public InvoiceStatus Status { get; set; }
 
         public ICollection<InvoiceItem> Items { get; set; } = new List<InvoiceItem>();
+        public int TenantId { get; set; }
+        public Tenant Tenant { get; set; }
     }
 }

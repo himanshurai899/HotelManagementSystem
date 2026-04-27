@@ -7,5 +7,7 @@
         public string Name { get; set; }
         public string Description { get; set; }
         public ICollection<RoomAmenity> RoomAmenities { get; set; }
+        public int TenantId { get; set; }
+        public Tenant Tenant { get; set; }
     }
 }

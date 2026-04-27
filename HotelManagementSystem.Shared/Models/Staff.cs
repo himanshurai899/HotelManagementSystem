@@ -10,5 +10,7 @@
         public string PhoneNumber { get; set; }
         public string Position { get; set; }
         public DateTime HireDate { get; set; }
+        public int TenantId { get; set; }
+        public Tenant Tenant { get; set; }
     }
 }

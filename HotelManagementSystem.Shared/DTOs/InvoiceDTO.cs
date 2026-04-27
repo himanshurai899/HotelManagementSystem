@@ -13,5 +13,7 @@ namespace HotelManagementSystem.Shared.DTOs
         public decimal TotalAmount { get; set; }
         public InvoiceStatus Status { get; set; }
         public List<InvoiceItemDTO> Items { get; set; } = new();
+        public int TenantId { get; set; }
+        public string TenantName { get; set; } // To avoid complex object graph
     }
 }

@@ -1,4 +1,5 @@
 ﻿using HotelManagementSystem.Shared.DTOs;
+using HotelManagementSystem.Shared.Interfaces;
 using HotelManagementSystem.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -13,12 +14,13 @@ namespace HotelManagementSystem.API.Controllers
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, RoleManager<Role> roleManager) : ControllerBase
+    public class AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, RoleManager<Role> roleManager, IRepository<UserTenant> userTenantRepo) : ControllerBase
     {
         private readonly UserManager<User> _userManager = userManager;
         private readonly SignInManager<User> _signInManager = signInManager;
         private readonly IConfiguration _configuration = configuration;
         private readonly RoleManager<Role> _roleManager = roleManager;
+        private readonly IRepository<UserTenant> _userTenantRepo = userTenantRepo;
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO model)
@@ -79,12 +81,21 @@ namespace HotelManagementSystem.API.Controllers
                 }
             }
 
-            var claims = new List<Claim>
+            // Resolve user's primary tenant (first active membership) for TenantId claim
+            var allUserTenants = await _userTenantRepo.GetAllAsync();
+            var primaryTenant = allUserTenants.FirstOrDefault(ut => ut.UserId == user.Id);
+
+            var baseClaims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new(ClaimTypes.NameIdentifier, user.Id.ToString())
-            }
+            };
+
+            if (primaryTenant != null)
+                baseClaims.Add(new Claim("TenantId", primaryTenant.TenantId.ToString()));
+
+            var claims = baseClaims
             .Union(userClaims)
             .Union(roleClaims)
             .Union(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));

@@ -1,4 +1,5 @@
-﻿using HotelManagementSystem.Shared.Models;
+﻿using HotelManagementSystem.Shared.Enums;
+using HotelManagementSystem.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -18,6 +19,8 @@ namespace HotelManagementSystem.Shared.Data
             Invoices = Set<Invoice>();
             InvoiceItems = Set<InvoiceItem>();
             CompanyProfiles = Set<CompanyProfile>();
+            Tenants = Set<Tenant>();
+            UserTenants = Set<UserTenant>();
         }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
@@ -28,6 +31,8 @@ namespace HotelManagementSystem.Shared.Data
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceItem> InvoiceItems { get; set; }
         public DbSet<CompanyProfile> CompanyProfiles { get; set; }
+        public DbSet<Tenant> Tenants { get; set; }
+        public DbSet<UserTenant> UserTenants { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -217,6 +222,83 @@ namespace HotelManagementSystem.Shared.Data
                 .Property(ii => ii.Amount)
                 .HasColumnType("decimal(18,2)");
 
+            // ── Phase 9: Multi-Tenant SaaS ────────────────────────────────────
+
+            // Tenant — unique subdomain index
+            modelBuilder.Entity<Tenant>()
+                .HasIndex(t => t.Subdomain)
+                .IsUnique();
+
+            // UserTenant — composite PK
+            modelBuilder.Entity<UserTenant>()
+                .HasKey(ut => new { ut.UserId, ut.TenantId });
+
+            modelBuilder.Entity<UserTenant>()
+                .HasOne(ut => ut.User)
+                .WithMany(u => u.UserTenants)
+                .HasForeignKey(ut => ut.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserTenant>()
+                .HasOne(ut => ut.Tenant)
+                .WithMany(t => t.UserTenants)
+                .HasForeignKey(ut => ut.TenantId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // TenantId FK on tenanted entities — NoAction to avoid cascade conflicts
+            modelBuilder.Entity<Room>()
+                .HasOne(r => r.Tenant)
+                .WithMany()
+                .HasForeignKey(r => r.TenantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Tenant)
+                .WithMany()
+                .HasForeignKey(b => b.TenantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Staff>()
+                .HasOne(s => s.Tenant)
+                .WithMany()
+                .HasForeignKey(s => s.TenantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<RoomType>()
+                .HasOne(rt => rt.Tenant)
+                .WithMany()
+                .HasForeignKey(rt => rt.TenantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Amenity>()
+                .HasOne(a => a.Tenant)
+                .WithMany()
+                .HasForeignKey(a => a.TenantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Tenant)
+                .WithMany()
+                .HasForeignKey(i => i.TenantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Seed DefaultTenant — satisfies FK for all existing seeded data
+            modelBuilder.Entity<Tenant>().HasData(new Tenant
+            {
+                Id = 1,
+                Name = "Default",
+                Subdomain = "default",
+                Plan = TenantPlan.Enterprise,
+                IsActive = true,
+                CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+            });
+
+            // Assign all existing seeded users to DefaultTenant
+            modelBuilder.Entity<UserTenant>().HasData(
+                new UserTenant { UserId = 1, TenantId = 1, TenantRole = "Administrator", JoinedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new UserTenant { UserId = 2, TenantId = 1, TenantRole = null,            JoinedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new UserTenant { UserId = 3, TenantId = 1, TenantRole = "Administrator", JoinedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc) }
+            );
         }
     }
 }
