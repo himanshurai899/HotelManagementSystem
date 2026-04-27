@@ -1,0 +1,34 @@
+<div class="dashboard-header">
+  <h1><mat-icon>explore</mat-icon> Explore Our Hotel</h1>
+  <p>Browse available rooms — <a routerLink="/register">create an account</a> to make a booking</p>
+</div>
+
+@if (loading()) {
+  <div class="center"><mat-spinner></mat-spinner></div>
+} @else {
+  <h3>Available Rooms</h3>
+  <div class="rooms-grid">
+    @for (room of rooms(); track room.id) {
+      <mat-card class="room-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar color="primary">hotel</mat-icon>
+          <mat-card-title>Room {{ room.roomNumber }}</mat-card-title>
+          <mat-card-subtitle>{{ getTypeName(room.roomTypeId) }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-chip color="primary" highlighted>Available</mat-chip>
+        </mat-card-content>
+        <mat-card-actions>
+          <a mat-button color="primary" routerLink="/register">Book Now</a>
+        </mat-card-actions>
+      </mat-card>
+    }
+    @if (rooms().length === 0) {
+      <p>No rooms available at this time. Please check back later.</p>
+    }
+  </div>
+  <div class="cta">
+    <a mat-raised-button color="primary" routerLink="/browse-rooms">View All Rooms</a>
+    <a mat-raised-button color="accent" routerLink="/register">Create Account</a>
+  </div>
+}

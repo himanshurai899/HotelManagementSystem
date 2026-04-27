@@ -1,0 +1,8 @@
+.page-container { padding: 8px; }
+.page-header { margin-bottom: 20px; h2 { display: flex; align-items: center; gap: 8px; margin: 0; } }
+.filters { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+.rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+.room-card { transition: transform 0.15s; &:hover { transform: translateY(-4px); } }
+.price { font-size: 1.1rem; font-weight: 600; margin-bottom: 8px; color: #1976d2; }
+.empty { color: #888; padding: 24px; }
+.center { display: flex; justify-content: center; padding: 40px; }

@@ -57,8 +57,8 @@ namespace HotelManagementSystem.API.Controllers
             if (!result.Succeeded)
                 return Unauthorized();
 
-            var token = GenerateJwtToken(user);
-            return Ok(new { Token = token });
+            var token = await GenerateJwtToken(user);
+            return Ok(new { token });
         }
 
         private async Task<string> GenerateJwtToken(User user)

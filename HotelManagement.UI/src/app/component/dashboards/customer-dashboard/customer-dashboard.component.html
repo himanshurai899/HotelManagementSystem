@@ -1,0 +1,51 @@
+<div class="dashboard-header">
+  <h1><mat-icon>person</mat-icon> My Dashboard</h1>
+  <p>Manage your hotel bookings</p>
+</div>
+
+<div class="actions-row">
+  <a mat-raised-button color="primary" routerLink="/bookings">
+    <mat-icon>book_online</mat-icon> My Bookings
+  </a>
+  <a mat-raised-button color="accent" routerLink="/browse-rooms">
+    <mat-icon>search</mat-icon> Browse Rooms
+  </a>
+</div>
+
+<div class="section-title">
+  <h3>Recent Bookings</h3>
+</div>
+
+@if (loading()) {
+  <div class="center"><mat-spinner></mat-spinner></div>
+} @else if (bookings().length === 0) {
+  <mat-card class="empty-card">
+    <mat-card-content>
+      <mat-icon>hotel_class</mat-icon>
+      <p>No bookings yet. <a routerLink="/browse-rooms">Browse available rooms</a> to make your first booking!</p>
+    </mat-card-content>
+  </mat-card>
+} @else {
+  <div class="bookings-list">
+    @for (b of bookings(); track b.id) {
+      <mat-card class="booking-card">
+        <mat-card-content>
+          <div class="booking-row">
+            <mat-icon color="primary">hotel</mat-icon>
+            <div class="booking-info">
+              <strong>Room {{ b.roomNumber }}</strong>
+              <span>{{ b.checkInDate | date:'mediumDate' }} → {{ b.checkOutDate | date:'mediumDate' }}</span>
+            </div>
+            <div class="booking-right">
+              <strong>${{ b.totalPrice | number:'1.2-2' }}</strong>
+              <mat-chip [color]="getStatusColor(b.status)" highlighted>
+                {{ statusLabels[b.status] }}
+              </mat-chip>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    }
+    <a mat-button routerLink="/bookings">View all bookings →</a>
+  </div>
+}

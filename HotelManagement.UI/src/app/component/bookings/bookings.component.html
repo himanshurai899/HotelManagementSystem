@@ -1,0 +1,88 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2><mat-icon>book_online</mat-icon> {{ isAdmin ? 'All Bookings' : 'My Bookings' }}</h2>
+    @if (!isAdmin) {
+      <button mat-raised-button color="primary" (click)="showForm.set(true)">
+        <mat-icon>add</mat-icon> New Booking
+      </button>
+    }
+  </div>
+
+  @if (loading()) { <div class="center"><mat-spinner></mat-spinner></div> }
+
+  @if (!loading()) {
+    <mat-card>
+      <table mat-table [dataSource]="bookings()" class="full-width">
+        <ng-container matColumnDef="roomNumber">
+          <th mat-header-cell *matHeaderCellDef>Room</th>
+          <td mat-cell *matCellDef="let b">{{ b.roomNumber }}</td>
+        </ng-container>
+        <ng-container matColumnDef="checkIn">
+          <th mat-header-cell *matHeaderCellDef>Check In</th>
+          <td mat-cell *matCellDef="let b">{{ b.checkInDate | date:'mediumDate' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="checkOut">
+          <th mat-header-cell *matHeaderCellDef>Check Out</th>
+          <td mat-cell *matCellDef="let b">{{ b.checkOutDate | date:'mediumDate' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="total">
+          <th mat-header-cell *matHeaderCellDef>Total</th>
+          <td mat-cell *matCellDef="let b">${{ b.totalPrice | number:'1.2-2' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let b">
+            <mat-chip [color]="getStatusColor(b.status)" highlighted>{{ statusLabels[b.status] }}</mat-chip>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let b">
+            @if (canModify) {
+              <button mat-icon-button color="warn" (click)="cancel(b.id)" title="Cancel">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            } @else {
+              <span class="muted" title="Requires ManageBookings permission">—</span>
+            }
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      @if (bookings().length === 0) {
+        <div class="empty">No bookings found.</div>
+      }
+    </mat-card>
+  }
+
+  @if (showForm()) {
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>New Booking</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Room</mat-label>
+            <mat-select formControlName="roomId">
+              @for (r of rooms(); track r.id) {
+                <mat-option [value]="r.id">Room {{ r.roomNumber }} — {{ r.roomTypeName }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Check In</mat-label>
+            <input matInput type="date" formControlName="checkInDate" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Check Out</mat-label>
+            <input matInput type="date" formControlName="checkOutDate" />
+          </mat-form-field>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Book</button>
+            <button mat-button type="button" (click)="showForm.set(false)">Cancel</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

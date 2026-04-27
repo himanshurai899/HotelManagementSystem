@@ -1,0 +1,37 @@
+@if (loading()) { <div class="center"><mat-spinner diameter="40"></mat-spinner></div> }
+
+@if (!loading()) {
+  <mat-card>
+    <table mat-table [dataSource]="permissions()" class="full-width">
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Permission</th>
+        <td mat-cell *matCellDef="let p">
+          <span class="perm-name"><mat-icon class="perm-icon">lock</mat-icon>{{ p.name }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="description">
+        <th mat-header-cell *matHeaderCellDef>Description</th>
+        <td mat-cell *matCellDef="let p">{{ p.description }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="grantedTo">
+        <th mat-header-cell *matHeaderCellDef>Granted To Roles</th>
+        <td mat-cell *matCellDef="let p">
+          <div class="chips-row">
+            @for (role of rolesWithPermission(p.name); track role) {
+              <mat-chip class="role-chip role-chip--{{ role.toLowerCase() }}">{{ role }}</mat-chip>
+            }
+            @if (rolesWithPermission(p.name).length === 0) {
+              <span class="empty-hint">None</span>
+            }
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </mat-card>
+}

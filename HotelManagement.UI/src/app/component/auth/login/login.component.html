@@ -1,0 +1,95 @@
+<div class="auth-page">
+
+  <!-- ── Left hero panel ─────────────────────────────── -->
+  <div class="auth-hero">
+    <div class="hero-blob blob1"></div>
+    <div class="hero-blob blob2"></div>
+    <div class="hero-blob blob3"></div>
+
+    <div class="hero-body">
+      <div class="hero-brand">
+        <mat-icon>hotel</mat-icon>
+        <span>HotelMS</span>
+      </div>
+
+      <div class="hero-copy">
+        <h1>Welcome<br>back.</h1>
+        <p>Sign in and manage your hotel<br>operations in one place.</p>
+      </div>
+
+      <div class="hero-features">
+        <div class="hf-item"><mat-icon>check_circle</mat-icon> Real-time room management</div>
+        <div class="hf-item"><mat-icon>check_circle</mat-icon> Booking & reservation tracking</div>
+        <div class="hf-item"><mat-icon>check_circle</mat-icon> Role-based access control</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right form panel ────────────────────────────── -->
+  <div class="auth-form-panel">
+    <div class="form-wrap">
+
+      <div class="form-header">
+        <h2>Login to your account</h2>
+        <p>Enter your credentials to continue</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+
+        <div class="field-group">
+          <label>Username</label>
+          <div class="input-wrap" [class.has-error]="form.get('userName')?.invalid && form.get('userName')?.touched">
+            <mat-icon>person_outline</mat-icon>
+            <input formControlName="userName" placeholder="Enter your username" autocomplete="username" />
+          </div>
+          @if (form.get('userName')?.hasError('required') && form.get('userName')?.touched) {
+            <span class="field-error">Username is required</span>
+          }
+        </div>
+
+        <div class="field-group">
+          <label>Password</label>
+          <div class="input-wrap" [class.has-error]="form.get('password')?.invalid && form.get('password')?.touched">
+            <mat-icon>lock_outline</mat-icon>
+            <input formControlName="password"
+                   [type]="hidePassword() ? 'password' : 'text'"
+                   placeholder="Enter your password"
+                   autocomplete="current-password" />
+            <button type="button" class="toggle-eye" (click)="hidePassword.set(!hidePassword())">
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
+            <span class="field-error">Password must be at least 6 characters</span>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="alert-error">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <button type="submit" class="btn-primary" [disabled]="loading() || form.invalid">
+          @if (loading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Signing in…</span>
+          } @else {
+            <span>Login now</span>
+            <mat-icon>arrow_forward</mat-icon>
+          }
+        </button>
+
+      </form>
+
+      <p class="form-footer">
+        Don't have an account?
+        <a routerLink="/register">Create one free</a>
+      </p>
+
+    </div>
+  </div>
+
+</div>
+

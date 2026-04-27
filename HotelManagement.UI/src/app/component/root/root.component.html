@@ -1,6 +1,141 @@
-<div class="pad1">
-    <app-nav-bar></app-nav-bar>
-</div>
-<div class="container">
-    <router-outlet></router-outlet>
-</div>
+@if (auth.showRefreshPrompt()) {
+  <div class="refresh-banner">
+    <mat-icon>timer</mat-icon>
+    <span>Your session is about to expire.</span>
+    <a mat-button routerLink="/login" (click)="auth.dismissRefreshPrompt()">Sign in again</a>
+    <button mat-icon-button (click)="auth.dismissRefreshPrompt()"><mat-icon>close</mat-icon></button>
+  </div>
+}
+
+<mat-sidenav-container class="app-shell" autosize>
+  <!-- Left Sidebar -->
+  <mat-sidenav
+    #sidenav
+    class="app-sidenav"
+    [mode]="isHandset() ? 'over' : 'side'"
+    [opened]="!isHandset() && auth.isLoggedIn() && !isAuthRoute()"
+    [fixedInViewport]="isHandset()">
+
+    <div class="sidenav-brand">
+      <mat-icon class="brand-icon">hotel</mat-icon>
+      <div class="brand-text">
+        <strong>Hotel</strong>
+        <span>Management</span>
+      </div>
+    </div>
+
+    <mat-divider></mat-divider>
+
+    @if (auth.isLoggedIn()) {
+      <div class="sidenav-user">
+        <div class="avatar">{{ initials() }}</div>
+        <div class="user-info">
+          <strong>{{ username() }}</strong>
+          <span>{{ primaryRole() }}</span>
+        </div>
+      </div>
+      <mat-divider></mat-divider>
+    }
+
+    <nav class="sidenav-nav">
+      @for (group of groupedMenus(); track group.label) {
+        <div class="nav-group">
+          <div class="nav-group-label">
+            <mat-icon>{{ group.icon }}</mat-icon>
+            <span>{{ group.label }}</span>
+          </div>
+          @for (menu of group.items; track menu.route) {
+            <a class="nav-item"
+               [routerLink]="'/' + menu.route"
+               routerLinkActive="active"
+               [routerLinkActiveOptions]="{ exact: menu.route === '' }"
+               (click)="closeOnHandset(sidenav)">
+              <span class="nav-item-icon">
+                <mat-icon>{{ menu.icon }}</mat-icon>
+              </span>
+              <span class="nav-item-text">
+                <span class="nav-item-title">{{ menu.title }}</span>
+                <span class="nav-item-desc">{{ menu.description }}</span>
+              </span>
+            </a>
+          }
+        </div>
+      }
+    </nav>
+
+    @if (auth.isLoggedIn()) {
+      <div class="sidenav-footer">
+        <button mat-stroked-button class="full" (click)="logout()">
+          <mat-icon>logout</mat-icon> Logout
+        </button>
+      </div>
+    } @else {
+      <div class="sidenav-footer">
+        <a mat-flat-button color="primary" routerLink="/login" class="full">
+          <mat-icon>login</mat-icon> Sign In
+        </a>
+        <a mat-stroked-button routerLink="/register" class="full">
+          <mat-icon>app_registration</mat-icon> Register
+        </a>
+      </div>
+    }
+  </mat-sidenav>
+
+  <!-- Main Content -->
+  <mat-sidenav-content class="app-content">
+    @if (!isAuthRoute()) {
+      <mat-toolbar class="app-topbar">
+      <button mat-icon-button (click)="sidenav.toggle()" aria-label="Toggle navigation">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <a routerLink="/" class="topbar-brand">
+        <mat-icon>hotel</mat-icon>
+        <span>Hotel Management</span>
+      </a>
+
+      <span class="spacer"></span>
+
+      @if (auth.isLoggedIn()) {
+        <button class="user-pill" [matMenuTriggerFor]="userMenu">
+          <div class="user-pill-avatar">{{ initials() }}</div>
+          <div class="user-pill-info hide-sm">
+            <span class="user-pill-name">{{ username() }}</span>
+            <span class="user-pill-role">{{ primaryRole() }}</span>
+          </div>
+          <mat-icon class="user-pill-chevron">expand_more</mat-icon>
+        </button>
+
+        <mat-menu #userMenu xPosition="before" class="user-dropdown-panel">
+          <div class="udp-profile" (click)="$event.stopPropagation()">
+            <div class="udp-avatar">{{ initials() }}</div>
+            <div class="udp-info">
+              <strong>{{ username() }}</strong>
+              <span class="udp-badge">{{ primaryRole() }}</span>
+            </div>
+          </div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item class="udp-logout" (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            <span>Sign out</span>
+          </button>
+        </mat-menu>
+
+      } @else {
+        <a mat-button routerLink="/login" class="topbar-action">
+          <mat-icon>login</mat-icon>
+          <span class="hide-sm">Sign In</span>
+        </a>
+        <a mat-flat-button color="primary" routerLink="/register" class="topbar-action register-btn">
+          <mat-icon>app_registration</mat-icon>
+          <span class="hide-sm">Register</span>
+        </a>
+      }
+    </mat-toolbar>
+    }
+
+    <main class="app-main" [class.auth-main]="isAuthRoute()">
+      <router-outlet></router-outlet>
+    </main>
+  </mat-sidenav-content>
+</mat-sidenav-container>

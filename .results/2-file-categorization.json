@@ -1,0 +1,142 @@
+{
+  "api-controllers": [
+    "HotelManagementSystem.API/Controllers/AccountController.cs",
+    "HotelManagementSystem.API/Controllers/RolesController.cs",
+    "HotelManagementSystem.API/Controllers/RoomsController.cs"
+  ],
+  "api-configuration": [
+    "HotelManagementSystem.API/Program.cs",
+    "HotelManagementSystem.API/appsettings.json",
+    "HotelManagementSystem.API/appsettings.Development.json",
+    "HotelManagementSystem.API/Properties/launchSettings.json"
+  ],
+  "jwt-auth": [
+    "HotelManagementSystem.API/JWT/JwtTokenProvider.cs"
+  ],
+  "automapper-profiles": [
+    "HotelManagementSystem.API/Profiles/MappingProfile.cs"
+  ],
+  "entity-models": [
+    "HotelManagementSystem.Shared/Models/Room.cs",
+    "HotelManagementSystem.Shared/Models/RoomType.cs",
+    "HotelManagementSystem.Shared/Models/Booking.cs",
+    "HotelManagementSystem.Shared/Models/Payment.cs",
+    "HotelManagementSystem.Shared/Models/Amenity.cs",
+    "HotelManagementSystem.Shared/Models/RoomAmenity.cs",
+    "HotelManagementSystem.Shared/Models/Staff.cs",
+    "HotelManagementSystem.Shared/Models/User.cs",
+    "HotelManagementSystem.Shared/Models/Role.cs"
+  ],
+  "dtos": [
+    "HotelManagementSystem.Shared/DTOs/RoomDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/RoomTypeDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/BookingDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/PaymentDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/AmenityDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/StaffDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/UserDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/RoleDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/LoginDTO.cs",
+    "HotelManagementSystem.Shared/DTOs/RegisterDTO.cs"
+  ],
+  "enums": [
+    "HotelManagementSystem.Shared/Enums/BookingStatus.cs",
+    "HotelManagementSystem.Shared/Enums/PaymentStatus.cs"
+  ],
+  "interfaces": [
+    "HotelManagementSystem.Shared/Interfaces/IRepository.cs"
+  ],
+  "repositories": [
+    "HotelManagementSystem.Shared/Repositories/Repository.cs"
+  ],
+  "db-context": [
+    "HotelManagementSystem.Shared/Data/HotelDbContext.cs"
+  ],
+  "utilities": [
+    "HotelManagementSystem.Shared/Utilities/PasswordHasher.cs"
+  ],
+  "blazor-pages": [
+    "HotelManagementSystem.Client/Components/Pages/Home.razor",
+    "HotelManagementSystem.Client/Components/Pages/Rooms.razor",
+    "HotelManagementSystem.Client/Components/Pages/Counter.razor",
+    "HotelManagementSystem.Client/Components/Pages/Weather.razor",
+    "HotelManagementSystem.Client/Components/Pages/Error.razor",
+    "HotelManagementSystem.Admin/Pages/Index.razor",
+    "HotelManagementSystem.Admin/Pages/Counter.razor",
+    "HotelManagementSystem.Admin/Pages/FetchData.razor"
+  ],
+  "blazor-layout": [
+    "HotelManagementSystem.Client/Components/Layout/MainLayout.razor",
+    "HotelManagementSystem.Client/Components/Layout/MainLayout.razor.css",
+    "HotelManagementSystem.Client/Components/Layout/NavMenu.razor",
+    "HotelManagementSystem.Client/Components/Layout/NavMenu.razor.css",
+    "HotelManagementSystem.Admin/Shared/MainLayout.razor",
+    "HotelManagementSystem.Admin/Shared/MainLayout.razor.css",
+    "HotelManagementSystem.Admin/Shared/NavMenu.razor",
+    "HotelManagementSystem.Admin/Shared/NavMenu.razor.css",
+    "HotelManagementSystem.Admin/Shared/SurveyPrompt.razor"
+  ],
+  "blazor-app-root": [
+    "HotelManagementSystem.Client/Components/App.razor",
+    "HotelManagementSystem.Client/Components/Routes.razor",
+    "HotelManagementSystem.Client/Components/_Imports.razor",
+    "HotelManagementSystem.Admin/App.razor",
+    "HotelManagementSystem.Admin/_Imports.razor",
+    "HotelManagementSystem.Admin/Pages/_Host.cshtml",
+    "HotelManagementSystem.Admin/Pages/_Layout.cshtml"
+  ],
+  "blazor-configuration": [
+    "HotelManagementSystem.Client/Program.cs",
+    "HotelManagementSystem.Client/appsettings.json",
+    "HotelManagementSystem.Client/appsettings.Development.json",
+    "HotelManagementSystem.Client/Properties/launchSettings.json",
+    "HotelManagementSystem.Admin/Program.cs",
+    "HotelManagementSystem.Admin/appsettings.json",
+    "HotelManagementSystem.Admin/appsettings.Development.json",
+    "HotelManagementSystem.Admin/Properties/launchSettings.json"
+  ],
+  "api-clients": [
+    "HotelManagementSystem.Client/ApiClient.cs",
+    "HotelManagementSystem.Admin/Data/ApiClient.cs"
+  ],
+  "angular-components": [
+    "HotelManagement.UI/src/app/component/dashboard/dashboard.component.ts",
+    "HotelManagement.UI/src/app/component/dashboard/dashboard.component.html",
+    "HotelManagement.UI/src/app/component/dashboard/dashboard.component.scss",
+    "HotelManagement.UI/src/app/component/dashboard/dashboard.component.spec.ts",
+    "HotelManagement.UI/src/app/component/nav-bar/nav-bar.component.ts",
+    "HotelManagement.UI/src/app/component/nav-bar/nav-bar.component.html",
+    "HotelManagement.UI/src/app/component/nav-bar/nav-bar.component.scss",
+    "HotelManagement.UI/src/app/component/error/error.component.ts",
+    "HotelManagement.UI/src/app/component/root/root.component.ts"
+  ],
+  "angular-models": [
+    "HotelManagement.UI/src/app/model/menus.ts"
+  ],
+  "angular-routing": [
+    "HotelManagement.UI/src/app/app.routes.ts"
+  ],
+  "angular-configuration": [
+    "HotelManagement.UI/src/app/app.config.ts",
+    "HotelManagement.UI/angular.json",
+    "HotelManagement.UI/tsconfig.json",
+    "HotelManagement.UI/tsconfig.app.json",
+    "HotelManagement.UI/tsconfig.spec.json",
+    "HotelManagement.UI/package.json"
+  ],
+  "angular-styles": [
+    "HotelManagement.UI/src/styles.scss",
+    "HotelManagement.UI/src/app/component/dashboard/dashboard.component.scss",
+    "HotelManagement.UI/src/app/component/nav-bar/nav-bar.component.scss"
+  ],
+  "project-files": [
+    "HotelManagementSystem.API/HotelManagementSystem.API.csproj",
+    "HotelManagementSystem.Shared/HotelManagementSystem.Shared.csproj",
+    "HotelManagementSystem.Client/HotelManagementSystem.Client.csproj",
+    "HotelManagementSystem.Admin/HotelManagementSystem.Admin.csproj",
+    "HotelManagementSystem.sln"
+  ],
+  "migrations": [
+    "HotelManagementSystem.Shared/Migrations/"
+  ]
+}
