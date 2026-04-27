@@ -61,8 +61,11 @@ export interface RoleDTO {
 export interface UserDTO {
   id: number;
   username: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
+  profilePhotoUrl: string | null;
   roleId: number;
   roleName: string;
   roles: string[];
@@ -80,6 +83,26 @@ export interface CreateUserRequest {
   phoneNumber: string;
   password: string;
   roles: string[];
+}
+
+// ── Profile DTOs ───────────────────────────────────────────────────────────────
+
+export interface UpdateProfileRequest {
+  userName: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+  confirmNewPassword: string;
+}
+
+export interface ProfilePhotoResponse {
+  profilePhotoUrl: string;
 }
 
 // ── Auth DTOs ──────────────────────────────────────────────────────────────────

@@ -4,8 +4,10 @@ using HotelManagementSystem.Shared.Data;
 using HotelManagementSystem.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using HotelManagementSystem.API.Profiles;
 using HotelManagementSystem.API.Middleware;
+using HotelManagementSystem.API.Profiles;
+using HotelManagementSystem.API.Services;
+using HotelManagementSystem.API.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -69,6 +71,13 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+// File storage — switched via appsettings.json "StorageProvider": "Local" | "AzureBlob"
+var storageProvider = builder.Configuration["StorageProvider"] ?? "Local";
+if (storageProvider.Equals("AzureBlob", StringComparison.OrdinalIgnoreCase))
+    builder.Services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+else
+    builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
 // CORS — allow the Angular dev server and production origins
 builder.Services.AddCors(options =>
 {
@@ -89,6 +98,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "HotelManagementSystem API", Version = "v1" });
+    c.OperationFilter<FileUploadOperationFilter>();
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -167,6 +177,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
+
+// Serve wwwroot/uploads/ as /uploads/* (used by LocalFileStorageService)
+app.UseStaticFiles();
 
 app.UseCors("AngularClient");
 

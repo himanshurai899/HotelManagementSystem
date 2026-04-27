@@ -15,6 +15,7 @@ import { AccessControlComponent } from './component/access-control/access-contro
 import { BookingsComponent } from './component/bookings/bookings.component';
 import { BrowseRoomsComponent } from './component/browse-rooms/browse-rooms.component';
 import { UnauthorizedComponent } from './component/unauthorized/unauthorized.component';
+import { ProfileComponent } from './component/profile/profile.component';
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 
@@ -23,6 +24,7 @@ export const routes: Routes = [
   { path: 'login',       component: LoginComponent },
   { path: 'register',    component: RegisterComponent },
   { path: 'browse-rooms', component: BrowseRoomsComponent },
+  { path: 'profile', component: ProfileComponent, canActivate: [authGuard] },
   { path: 'unauthorized', component: UnauthorizedComponent },
   { path: 'error',       component: ErrorComponent },
 

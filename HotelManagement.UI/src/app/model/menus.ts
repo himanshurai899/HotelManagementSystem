@@ -85,6 +85,14 @@ export const menus: Menu[] = [
         category: 'Reservations',
         requiredRoles: ['Customer', 'Administrator', 'SuperAdmin'],
         icon: 'book_online'
+    },
+    {
+        route: 'profile',
+        title: 'My Profile',
+        description: 'View and edit your profile',
+        category: 'Account',
+        requiredRoles: [],
+        icon: 'account_circle'
     }
 ];
 
@@ -94,4 +102,5 @@ export const categoryMeta: Record<string, { icon: string }> = {
     'Property':     { icon: 'apartment' },
     'People':       { icon: 'groups' },
     'Reservations': { icon: 'event_available' },
+    'Account':      { icon: 'manage_accounts' },
 };

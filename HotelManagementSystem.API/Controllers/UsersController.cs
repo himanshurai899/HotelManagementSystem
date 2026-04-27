@@ -27,14 +27,17 @@ namespace HotelManagementSystem.API.Controllers
                 var claims = await _userManager.GetClaimsAsync(u);
                 result.Add(new UserDTO
                 {
-                    Id = u.Id,
-                    Username = u.UserName ?? string.Empty,
-                    Email = u.Email ?? string.Empty,
-                    PhoneNumber = u.PhoneNumber ?? string.Empty,
-                    RoleId = u.RoleId,
-                    RoleName = roles.FirstOrDefault() ?? string.Empty,
-                    Roles = roles.ToList(),
-                    Claims = claims
+                    Id             = u.Id,
+                    Username       = u.UserName      ?? string.Empty,
+                    FirstName      = u.FirstName     ?? string.Empty,
+                    LastName       = u.LastName      ?? string.Empty,
+                    Email          = u.Email         ?? string.Empty,
+                    PhoneNumber    = u.PhoneNumber   ?? string.Empty,
+                    ProfilePhotoUrl = u.ProfilePhotoUrl,
+                    RoleId         = u.RoleId,
+                    RoleName       = roles.FirstOrDefault() ?? string.Empty,
+                    Roles          = roles.ToList(),
+                    Claims         = claims
                         .Select(c => new ClaimDTO { Type = c.Type, Value = c.Value })
                         .ToList()
                 });
@@ -52,14 +55,17 @@ namespace HotelManagementSystem.API.Controllers
             var claims = await _userManager.GetClaimsAsync(user);
             return Ok(new UserDTO
             {
-                Id = user.Id,
-                Username = user.UserName ?? string.Empty,
-                Email = user.Email ?? string.Empty,
-                PhoneNumber = user.PhoneNumber ?? string.Empty,
-                RoleId = user.RoleId,
-                RoleName = roles.FirstOrDefault() ?? string.Empty,
-                Roles = roles.ToList(),
-                Claims = claims
+                Id             = user.Id,
+                Username       = user.UserName      ?? string.Empty,
+                FirstName      = user.FirstName     ?? string.Empty,
+                LastName       = user.LastName      ?? string.Empty,
+                Email          = user.Email         ?? string.Empty,
+                PhoneNumber    = user.PhoneNumber   ?? string.Empty,
+                ProfilePhotoUrl = user.ProfilePhotoUrl,
+                RoleId         = user.RoleId,
+                RoleName       = roles.FirstOrDefault() ?? string.Empty,
+                Roles          = roles.ToList(),
+                Claims         = claims
                     .Select(c => new ClaimDTO { Type = c.Type, Value = c.Value })
                     .ToList()
             });

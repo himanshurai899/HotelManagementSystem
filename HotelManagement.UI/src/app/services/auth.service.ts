@@ -28,6 +28,12 @@ export class AuthService {
 
   private refreshTimer: ReturnType<typeof setTimeout> | null = null;
 
+  /** Persisted profile photo URL so the navbar avatar survives a page reload */
+  private readonly _profilePhotoUrl = signal<string | null>(
+    typeof localStorage !== 'undefined' ? localStorage.getItem('hotel_profile_photo') : null
+  );
+  readonly profilePhotoUrl = this._profilePhotoUrl.asReadonly();
+
   // ── Constructor ───────────────────────────────────────────────────────────
 
   constructor(private router: Router) {
@@ -56,12 +62,21 @@ export class AuthService {
 
   clearToken(): void {
     localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem('hotel_profile_photo');
     this._token.set(null);
+    this._profilePhotoUrl.set(null);
     this._showRefreshPrompt.set(false);
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
       this.refreshTimer = null;
     }
+  }
+
+  /** Updates the cached profile photo URL in memory and localStorage. */
+  setProfilePhotoUrl(url: string | null): void {
+    if (url) localStorage.setItem('hotel_profile_photo', url);
+    else     localStorage.removeItem('hotel_profile_photo');
+    this._profilePhotoUrl.set(url);
   }
 
   // ── Auth state ────────────────────────────────────────────────────────────

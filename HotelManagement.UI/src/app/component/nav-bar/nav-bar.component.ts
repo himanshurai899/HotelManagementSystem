@@ -31,5 +31,16 @@ export class NavBarComponent {
     return this.auth.getUsername();
   });
 
+  profilePhotoUrl = computed(() => {
+    this.auth.token();
+    return this.auth.profilePhotoUrl();
+  });
+
+  /** Single-letter initials fallback when no profile photo is set */
+  avatarInitials = computed(() => {
+    const name = this.auth.getUsername();
+    return name ? name[0].toUpperCase() : '?';
+  });
+
   logout() { this.auth.logout(); }
 }

@@ -591,3 +591,16 @@ These rules are derived from `3-architectural-domains.json` and must be respecte
 - Create a separate `StaffService` class (no service layer exists)
 - Use a non-flat DTO with nested navigation objects
 - Use `styleUrls` (plural) in the Angular component
+
+---
+
+## Planned Features & Roadmap
+
+For planned phases (Billing, Multi-Tenant SaaS, Import/Export, UX Enhancements, Reports), see:
+
+👉 **[FEATURE_ROADMAP.md](../FEATURE_ROADMAP.md)**
+
+Key decisions recorded there:
+- **Tenant isolation:** row-level (`TenantId` FK on every tenanted entity)
+- **Charts:** `ng2-charts` (Chart.js) approved exclusively for `ReportsComponent`
+- **PDF invoices:** server-side via `QuestPDF` in `Shared/Utilities/InvoicePdfUtility.cs`

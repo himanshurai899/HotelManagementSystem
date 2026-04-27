@@ -23,10 +23,18 @@
 
     <div class="nav-end">
       @if (auth.isLoggedIn()) {
-        <button mat-button [matMenuTriggerFor]="userMenu">
-          <mat-icon>account_circle</mat-icon> {{ username() }}
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-btn">
+          @if (profilePhotoUrl()) {
+            <img [src]="profilePhotoUrl()" alt="avatar" class="nav-avatar" />
+          } @else {
+            <span class="nav-avatar-initials">{{ avatarInitials() }}</span>
+          }
+          {{ username() }}
         </button>
         <mat-menu #userMenu>
+          <a mat-menu-item routerLink="/profile">
+            <mat-icon>manage_accounts</mat-icon> My Profile
+          </a>
           <button mat-menu-item (click)="logout()">
             <mat-icon>logout</mat-icon> Logout
           </button>
