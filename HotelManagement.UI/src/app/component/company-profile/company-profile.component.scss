@@ -1,0 +1,135 @@
+.profile-page {
+  padding: 24px;
+  max-width: 960px;
+  margin: 0 auto;
+}
+
+.spinner-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+.section-card {
+  margin-bottom: 24px;
+
+  mat-card-header {
+    margin-bottom: 16px;
+  }
+}
+
+// ── Logo Section ──────────────────────────────────────────────────────────────
+
+.logo-section {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.logo-preview {
+  width: 160px;
+  height: 100px;
+  border: 2px dashed rgba(0,0,0,.2);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fafafa;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.company-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.logo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: rgba(0,0,0,.38);
+  font-size: 12px;
+  gap: 4px;
+
+  mat-icon { font-size: 36px; width: 36px; height: 36px; }
+}
+
+.logo-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  justify-content: center;
+}
+
+.upload-hint {
+  font-size: 12px;
+  color: rgba(0,0,0,.54);
+  margin: 0;
+
+  code {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+}
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.form-field {
+  flex: 1;
+  min-width: 240px;
+}
+
+.divider {
+  margin: 16px 0;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 8px 0 16px;
+  color: rgba(0,0,0,.7);
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+}
+
+// ── Colour Swatch ─────────────────────────────────────────────────────────────
+
+.color-swatch {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,.2);
+  vertical-align: middle;
+}
+
+// ── Actions ───────────────────────────────────────────────────────────────────
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 16px;
+
+  button {
+    min-width: 160px;
+  }
+}

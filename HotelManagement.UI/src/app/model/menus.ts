@@ -87,6 +87,30 @@ export const menus: Menu[] = [
         icon: 'book_online'
     },
     {
+        route: 'invoices',
+        title: 'Invoices',
+        description: 'View and manage invoices',
+        category: 'Billing',
+        requiredRoles: ['Customer', 'Administrator', 'SuperAdmin'],
+        icon: 'receipt_long'
+    },
+    {
+        route: 'payments',
+        title: 'Payments',
+        description: 'View and manage payments',
+        category: 'Billing',
+        requiredRoles: ['Customer', 'Administrator', 'SuperAdmin'],
+        icon: 'payments'
+    },
+    {
+        route: 'company-profile',
+        title: 'Company Profile',
+        description: 'Invoice branding & company settings',
+        category: 'Billing',
+        requiredRoles: ['Administrator', 'SuperAdmin'],
+        icon: 'business'
+    },
+    {
         route: 'profile',
         title: 'My Profile',
         description: 'View and edit your profile',
@@ -102,5 +126,6 @@ export const categoryMeta: Record<string, { icon: string }> = {
     'Property':     { icon: 'apartment' },
     'People':       { icon: 'groups' },
     'Reservations': { icon: 'event_available' },
+    'Billing':      { icon: 'account_balance_wallet' },
     'Account':      { icon: 'manage_accounts' },
 };

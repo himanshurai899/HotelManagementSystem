@@ -77,11 +77,24 @@ namespace HotelManagementSystem.API.Controllers
         public async Task<IActionResult> Create([FromBody] CreateUserDTO model)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            // Resolve the primary role ID — required by the User.RoleId FK
+            string primaryRoleName = model.Roles.FirstOrDefault(r =>
+                _roleManager.RoleExistsAsync(r).GetAwaiter().GetResult()) ?? "Customer";
+            var primaryRole = await _roleManager.FindByNameAsync(primaryRoleName);
+            if (primaryRole is null)
+                return BadRequest($"Role '{primaryRoleName}' does not exist.");
+
             var user = new User
             {
-                UserName = model.Username,
-                Email = model.Email,
-                PhoneNumber = model.PhoneNumber,
+                UserName      = model.Username,
+                FirstName     = model.FirstName,
+                LastName      = model.LastName,
+                Email         = model.Email,
+                PhoneNumber   = model.PhoneNumber,
+                RoleId        = primaryRole.Id,
+                IdProofType   = string.IsNullOrWhiteSpace(model.IdProofType) ? null : model.IdProofType,
+                IdProofNumber = string.IsNullOrWhiteSpace(model.IdProofNumber) ? null : model.IdProofNumber,
             };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded) return BadRequest(result.Errors);

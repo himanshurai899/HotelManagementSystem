@@ -1,7 +1,106 @@
 <div class="page-container">
   <div class="page-header">
     <h2><mat-icon>manage_accounts</mat-icon> Users</h2>
+    <button mat-raised-button color="primary" (click)="toggleForm()">
+      <mat-icon>{{ showForm() ? 'close' : 'person_add' }}</mat-icon>
+      {{ showForm() ? 'Cancel' : 'Add User' }}
+    </button>
   </div>
+
+  @if (showForm()) {
+    <mat-card class="form-card">
+      <mat-card-title>New User</mat-card-title>
+      <mat-divider></mat-divider>
+      <form [formGroup]="form" (ngSubmit)="createUser()" class="user-form">
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>First Name</mat-label>
+            <input matInput formControlName="firstName" />
+            @if (form.get('firstName')?.invalid && form.get('firstName')?.touched) {
+              <mat-error>First name is required.</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Last Name</mat-label>
+            <input matInput formControlName="lastName" />
+            @if (form.get('lastName')?.invalid && form.get('lastName')?.touched) {
+              <mat-error>Last name is required.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Username</mat-label>
+            <input matInput formControlName="username" />
+            @if (form.get('username')?.invalid && form.get('username')?.touched) {
+              <mat-error>Username is required.</mat-error>
+            }
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" />
+            @if (form.get('email')?.invalid && form.get('email')?.touched) {
+              <mat-error>Valid email is required.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Phone Number</mat-label>
+            <input matInput formControlName="phoneNumber" />
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Password</mat-label>
+            <input matInput type="password" formControlName="password" />
+            @if (form.get('password')?.invalid && form.get('password')?.touched) {
+              <mat-error>Password must be at least 6 characters.</mat-error>
+            }
+          </mat-form-field>
+        </div>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Roles</mat-label>
+            <mat-select formControlName="roles" multiple>
+              @for (role of allRoles; track role) {
+                <mat-option [value]="role">{{ role }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <mat-divider class="section-divider"></mat-divider>
+        <p class="section-label"><mat-icon>badge</mat-icon> ID Proof <span class="optional">(optional)</span></p>
+
+        <div class="form-row">
+          <mat-form-field appearance="outline">
+            <mat-label>ID Proof Type</mat-label>
+            <mat-select formControlName="idProofType">
+              <mat-option [value]="null">— None —</mat-option>
+              @for (type of idProofTypes; track type) {
+                <mat-option [value]="type">{{ type }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>ID Proof Number</mat-label>
+            <input matInput formControlName="idProofNumber" placeholder="e.g. AB1234567" />
+          </mat-form-field>
+        </div>
+
+        <div class="form-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="saving()">
+            <mat-icon>save</mat-icon> {{ saving() ? 'Saving…' : 'Create User' }}
+          </button>
+          <button mat-stroked-button type="button" (click)="toggleForm()">Cancel</button>
+        </div>
+      </form>
+    </mat-card>
+  }
+
   @if (loading()) { <div class="center"><mat-spinner></mat-spinner></div> }
   @if (!loading()) {
     <mat-card>
@@ -9,6 +108,10 @@
         <ng-container matColumnDef="userName">
           <th mat-header-cell *matHeaderCellDef>Username</th>
           <td mat-cell *matCellDef="let u">{{ u.userName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="fullName">
+          <th mat-header-cell *matHeaderCellDef>Full Name</th>
+          <td mat-cell *matCellDef="let u">{{ u.firstName }} {{ u.lastName }}</td>
         </ng-container>
         <ng-container matColumnDef="email">
           <th mat-header-cell *matHeaderCellDef>Email</th>

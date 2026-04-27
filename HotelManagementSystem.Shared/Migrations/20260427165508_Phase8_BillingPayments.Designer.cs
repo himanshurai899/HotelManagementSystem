@@ -4,6 +4,7 @@ using HotelManagementSystem.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagementSystem.Shared.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260427165508_Phase8_BillingPayments")]
+    partial class Phase8_BillingPayments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -403,12 +406,6 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.Property<string>("FirstName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("IdProofNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("IdProofType")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("LastName")
                         .HasColumnType("nvarchar(max)");
 
@@ -482,13 +479,13 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "37693ae5-b8d7-4f29-98df-74a94638899e",
+                            ConcurrencyStamp = "fdedb39c-6a8a-4571-9d63-c3bf0ce61c7e",
                             Email = "admin@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEInYhijSQ+EqAb/xqIy0afIqI/ITm+WAc2TckVQyktOudTsdh4a62lqXqCGwHVAMtA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEJOE9nED9G4JNLwk8w0P38R1Aedfk1X1jzxs9rzXntnTdBAegMV95Ga/DF+uMkRcDA==",
                             PhoneNumber = "1234567890",
                             PhoneNumberConfirmed = false,
                             RoleId = 1,
@@ -500,13 +497,13 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2c005a43-e9fb-4b50-9084-5e2746e59934",
+                            ConcurrencyStamp = "47cd1535-c21d-41fc-8001-c792d50aacb8",
                             Email = "guest@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "GUEST@EXAMPLE.COM",
                             NormalizedUserName = "GUEST",
-                            PasswordHash = "AQAAAAIAAYagAAAAEI7Fjc91/INmdM40ULwKtqIQFju3adaTEHP4yJZ/6wr0qWau2h5jmTvkLS0jm9Lx0A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEPfFt7vqDn6KxTAdP+61FLUWNUPqbtmBWo2e1sN3yew0pqjfSehdB7odYIbkqOEM4A==",
                             PhoneNumber = "0987654321",
                             PhoneNumberConfirmed = false,
                             RoleId = 2,
@@ -518,13 +515,13 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 3,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "351fda4c-bbb4-4f1c-9eae-a6fc7716507c",
+                            ConcurrencyStamp = "4be86eab-b3cc-4e4b-b8f4-3996fa0f90f0",
                             Email = "superadmin@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "SUPERADMIN@EXAMPLE.COM",
                             NormalizedUserName = "SUPERADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEI79s9jSfXHqIqU92aueAmlxWy5DzLOBoXf1b9Lis79RDnda6zVU/sO3jiLgbbXVrA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEDBruBJKmg9QjIdwpZ2llqH6kNWCsSQc3lPbVETJrlgd76tiascZHUmywOFoNwugyA==",
                             PhoneNumber = "1112223333",
                             PhoneNumberConfirmed = false,
                             RoleId = 4,
