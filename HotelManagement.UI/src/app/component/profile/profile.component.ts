@@ -19,6 +19,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { ChangePasswordRequest, UpdateProfileRequest, UserDTO } from '../../model/api.models';
+import { environment } from '../../../environments/environment';
 
 function passwordMatchValidator(group: AbstractControl): ValidationErrors | null {
   const newPwd     = group.get('newPassword')?.value;
@@ -86,12 +87,25 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit() { this.loadProfile(); }
 
+  /** Resolves a relative /uploads/... URL from the API to an absolute URL. */
+  private resolvePhotoUrl(url: string | null | undefined): string | null {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    // Strip '/api' suffix from apiBaseUrl to get the server origin
+    const origin = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+    return `${origin}${url}`;
+  }
+
   loadProfile() {
     this.loading.set(true);
     this.api.get<UserDTO>('profile').subscribe({
       next: p => {
         this.profile.set(p);
-        this.previewUrl.set(p.profilePhotoUrl ?? null);
+        const resolvedUrl = this.resolvePhotoUrl(p.profilePhotoUrl);
+        this.previewUrl.set(resolvedUrl);
+        this.auth.setProfilePhotoUrl(resolvedUrl);
+        const fullName = [p.firstName, p.lastName].filter(Boolean).join(' ') || p.username;
+        this.auth.setFullName(fullName);
         this.profileForm.patchValue({
           userName:    p.username,
           firstName:   p.firstName,
@@ -118,6 +132,8 @@ export class ProfileComponent implements OnInit {
     this.api.put<UserDTO>('profile', payload).subscribe({
       next: updated => {
         this.profile.set(updated);
+        const fullName = [updated.firstName, updated.lastName].filter(Boolean).join(' ') || updated.username;
+        this.auth.setFullName(fullName);
         this.snack.open('Profile updated!', '', { duration: 2500 });
       },
       error: () => this.snack.open('Failed to update profile.', 'Dismiss', { duration: 3000 }),
@@ -151,7 +167,9 @@ export class ProfileComponent implements OnInit {
     // Do NOT set Content-Type manually — Angular sets multipart/form-data automatically
     this.api.post<{ profilePhotoUrl: string }>('profile/photo', formData).subscribe({
       next: res => {
-        this.auth.setProfilePhotoUrl(res.profilePhotoUrl);
+        const resolved = this.resolvePhotoUrl(res.profilePhotoUrl);
+        this.previewUrl.set(resolved);
+        this.auth.setProfilePhotoUrl(resolved);
         this.snack.open('Photo uploaded!', '', { duration: 2500 });
       },
       error: () => this.snack.open('Upload failed.', 'Dismiss', { duration: 3000 }),

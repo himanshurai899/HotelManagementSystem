@@ -1,7 +1,8 @@
 import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-const TOKEN_KEY = 'hotel_token';
+const TOKEN_KEY        = 'hotel_token';
+const FULL_NAME_KEY    = 'hotel_full_name';
 /** Show the refresh prompt 5 min before the token expires */
 const REFRESH_WARNING_MS = 5 * 60 * 1000;
 
@@ -34,6 +35,12 @@ export class AuthService {
   );
   readonly profilePhotoUrl = this._profilePhotoUrl.asReadonly();
 
+  /** Persisted full name (firstName + lastName) so the navbar survives a page reload */
+  private readonly _fullName = signal<string | null>(
+    typeof localStorage !== 'undefined' ? localStorage.getItem(FULL_NAME_KEY) : null
+  );
+  readonly fullName = this._fullName.asReadonly();
+
   // ── Constructor ───────────────────────────────────────────────────────────
 
   constructor(private router: Router) {
@@ -63,8 +70,10 @@ export class AuthService {
   clearToken(): void {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem('hotel_profile_photo');
+    localStorage.removeItem(FULL_NAME_KEY);
     this._token.set(null);
     this._profilePhotoUrl.set(null);
+    this._fullName.set(null);
     this._showRefreshPrompt.set(false);
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
@@ -77,6 +86,18 @@ export class AuthService {
     if (url) localStorage.setItem('hotel_profile_photo', url);
     else     localStorage.removeItem('hotel_profile_photo');
     this._profilePhotoUrl.set(url);
+  }
+
+  /** Updates the cached full name (firstName + lastName) in memory and localStorage. */
+  setFullName(name: string | null): void {
+    if (name) localStorage.setItem(FULL_NAME_KEY, name);
+    else      localStorage.removeItem(FULL_NAME_KEY);
+    this._fullName.set(name);
+  }
+
+  /** Returns the persisted full name, falling back to username from JWT. */
+  getFullName(): string {
+    return this._fullName() ?? this.getUsername() ?? '';
   }
 
   // ── Auth state ────────────────────────────────────────────────────────────

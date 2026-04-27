@@ -79,9 +79,23 @@ export class RootComponent {
     return this.auth.getUsername() ?? '';
   });
 
+  /** Displays FirstName + LastName when available, falls back to username */
+  displayName = computed(() => {
+    this.auth.token();
+    this.auth.fullName(); // track changes
+    return this.auth.getFullName() || this.auth.getUsername() || '';
+  });
+
+  profilePhotoUrl = computed(() => {
+    this.auth.token();
+    return this.auth.profilePhotoUrl();
+  });
+
   initials = computed(() => {
-    const name = this.username();
+    const name = this.displayName();
     if (!name) return '?';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     return name.substring(0, 2).toUpperCase();
   });
 

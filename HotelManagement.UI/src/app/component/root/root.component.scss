@@ -69,6 +69,18 @@
     font-size: 0.9rem;
     color: #fff;
     flex-shrink: 0;
+    overflow: hidden;
+
+    &.avatar-img {
+      background: none;
+      padding: 0;
+    }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
   }
 
   .user-info {
@@ -270,6 +282,14 @@
     font-weight: 700;
     font-size: 0.78rem;
     flex-shrink: 0;
+    overflow: hidden;
+
+    .user-pill-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
   }
 
   .user-pill-info {
@@ -335,6 +355,14 @@
     font-size: 1rem;
     box-shadow: 0 3px 8px rgba(63, 81, 181, 0.35);
     flex-shrink: 0;
+    overflow: hidden;
+
+    .udp-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
   }
 
   .udp-info {
