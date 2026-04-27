@@ -1,0 +1,149 @@
+<div class="profile-page">
+
+  <!-- Loading -->
+  <div *ngIf="loading()" class="spinner-wrap">
+    <mat-spinner diameter="48" />
+  </div>
+
+  <ng-container *ngIf="!loading()">
+
+    <!-- Logo & Identity Card -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>business</mat-icon>
+        <mat-card-title>Company Identity</mat-card-title>
+        <mat-card-subtitle>Logo and branding displayed on invoices</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+
+        <div class="logo-section">
+          <div class="logo-preview">
+            <img *ngIf="logoPreview()" [src]="logoPreview()" alt="Company Logo" class="company-logo" />
+            <div *ngIf="!logoPreview()" class="logo-placeholder">
+              <mat-icon>add_photo_alternate</mat-icon>
+              <span>No logo uploaded</span>
+            </div>
+          </div>
+          <div class="logo-actions">
+            <label class="upload-label">
+              <input type="file" accept="image/*" (change)="onLogoSelected($event)" hidden />
+              <button mat-stroked-button color="primary" type="button"
+                      onclick="this.previousElementSibling.click()">
+                <mat-icon>upload</mat-icon>
+                Upload Logo
+              </button>
+            </label>
+            <p class="upload-hint">
+              Stored at <code>uploads/&#123;CompanyName&#125;/assets/</code>.
+              Recommended: PNG, max 2 MB, transparent background.
+            </p>
+          </div>
+        </div>
+
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Settings Form -->
+    <mat-card class="section-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>edit_note</mat-icon>
+        <mat-card-title>Company Details</mat-card-title>
+        <mat-card-subtitle>Used on invoice headers and PDF exports</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="profileForm" (ngSubmit)="save()" class="profile-form">
+
+          <!-- Row 1: Name + GSTIN -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Company Name</mat-label>
+              <input matInput formControlName="companyName" placeholder="Grand Hotel Pvt. Ltd." />
+              <mat-icon matSuffix>business</mat-icon>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>GSTIN Number</mat-label>
+              <input matInput formControlName="gstinNumber" placeholder="27AABCU9603R1ZX" />
+              <mat-icon matSuffix>receipt</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <!-- Row 2: Phone + Email -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Phone Number</mat-label>
+              <input matInput formControlName="phoneNumber" placeholder="+91 9876543210" />
+              <mat-icon matSuffix>phone</mat-icon>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Email</mat-label>
+              <input matInput formControlName="email" placeholder="billing@hotel.com" />
+              <mat-icon matSuffix>email</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <!-- Row 3: Website + Address -->
+          <div class="form-row">
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Website</mat-label>
+              <input matInput formControlName="website" placeholder="https://grandhotel.com" />
+              <mat-icon matSuffix>language</mat-icon>
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Address</mat-label>
+              <textarea matInput formControlName="address" rows="2"
+                        placeholder="123 Main St, Mumbai 400001"></textarea>
+              <mat-icon matSuffix>location_on</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <mat-divider class="divider" />
+
+          <!-- PDF Branding -->
+          <h3 class="section-title">
+            <mat-icon>palette</mat-icon>
+            PDF Invoice Branding
+          </h3>
+
+          <div class="form-row">
+            <!-- Primary Colour -->
+            <mat-form-field appearance="outline" class="form-field color-field">
+              <mat-label>Primary Colour</mat-label>
+              <input matInput formControlName="primaryColor" placeholder="#1a73e8" />
+              <span matSuffix class="color-swatch"
+                    [style.background]="profileForm.get('primaryColor')?.value || '#1a73e8'"></span>
+              <mat-hint>Invoice header background</mat-hint>
+            </mat-form-field>
+            <!-- Accent Colour -->
+            <mat-form-field appearance="outline" class="form-field color-field">
+              <mat-label>Accent Colour</mat-label>
+              <input matInput formControlName="accentColor" placeholder="#f5f5f5" />
+              <span matSuffix class="color-swatch"
+                    [style.background]="profileForm.get('accentColor')?.value || '#f5f5f5'"></span>
+              <mat-hint>Alternating row background</mat-hint>
+            </mat-form-field>
+            <!-- Font Family -->
+            <mat-form-field appearance="outline" class="form-field">
+              <mat-label>Font Family</mat-label>
+              <mat-select formControlName="fontFamily">
+                <mat-option *ngFor="let font of fontOptions" [value]="font">
+                  <span [style.font-family]="font">{{ font }}</span>
+                </mat-option>
+              </mat-select>
+              <mat-icon matSuffix>font_download</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <!-- Save -->
+          <div class="form-actions">
+            <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
+              <mat-icon>save</mat-icon>
+              {{ saving() ? 'Saving…' : 'Save Changes' }}
+            </button>
+          </div>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+  </ng-container>
+</div>

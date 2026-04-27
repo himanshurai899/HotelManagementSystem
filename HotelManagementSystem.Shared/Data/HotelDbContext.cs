@@ -15,6 +15,9 @@ namespace HotelManagementSystem.Shared.Data
             Payments = Set<Payment>();
             Amenities = Set<Amenity>();
             Staff = Set<Staff>();
+            Invoices = Set<Invoice>();
+            InvoiceItems = Set<InvoiceItem>();
+            CompanyProfiles = Set<CompanyProfile>();
         }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
@@ -22,6 +25,9 @@ namespace HotelManagementSystem.Shared.Data
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Amenity> Amenities { get; set; }
         public DbSet<Staff> Staff { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceItem> InvoiceItems { get; set; }
+        public DbSet<CompanyProfile> CompanyProfiles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -195,6 +201,21 @@ namespace HotelManagementSystem.Shared.Data
             modelBuilder.Entity<User>()
                 .HasIndex(u => u.UserName)
                 .IsUnique();
+
+            // ── Invoice / InvoiceItem ──────────────────────────────────────────
+            modelBuilder.Entity<Invoice>()
+                .HasMany(i => i.Items)
+                .WithOne(ii => ii.Invoice)
+                .HasForeignKey(ii => ii.InvoiceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<Invoice>()
+                .Property(i => i.TotalAmount)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<InvoiceItem>()
+                .Property(ii => ii.Amount)
+                .HasColumnType("decimal(18,2)");
 
         }
     }

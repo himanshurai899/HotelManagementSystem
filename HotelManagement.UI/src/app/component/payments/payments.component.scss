@@ -1,0 +1,27 @@
+.page-card {
+  margin: 24px;
+}
+
+.spinner-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 32px;
+  color: var(--mat-sys-on-surface-variant);
+}
+
+mat-chip {
+  font-size: 12px;
+}

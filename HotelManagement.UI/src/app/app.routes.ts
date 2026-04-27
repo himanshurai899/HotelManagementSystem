@@ -16,6 +16,9 @@ import { BookingsComponent } from './component/bookings/bookings.component';
 import { BrowseRoomsComponent } from './component/browse-rooms/browse-rooms.component';
 import { UnauthorizedComponent } from './component/unauthorized/unauthorized.component';
 import { ProfileComponent } from './component/profile/profile.component';
+import { InvoicesComponent } from './component/invoices/invoices.component';
+import { PaymentsComponent } from './component/payments/payments.component';
+import { CompanyProfileComponent } from './component/company-profile/company-profile.component';
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 
@@ -61,6 +64,14 @@ export const routes: Routes = [
   // Shared: bookings (Customer + Admin + SuperAdmin)
   { path: 'bookings', component: BookingsComponent,
     canActivate: [authGuard, roleGuard], data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] } },
+
+  // Billing & Payments (Phase 8)
+  { path: 'invoices', component: InvoicesComponent,
+    canActivate: [authGuard, roleGuard], data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] } },
+  { path: 'payments', component: PaymentsComponent,
+    canActivate: [authGuard, roleGuard], data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] } },
+  { path: 'company-profile', component: CompanyProfileComponent,
+    canActivate: [authGuard, roleGuard], data: { roles: ['Administrator', 'SuperAdmin'] } },
 
   // Fallback
   { path: '**', redirectTo: '' }

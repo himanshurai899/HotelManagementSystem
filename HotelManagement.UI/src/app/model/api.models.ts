@@ -79,10 +79,14 @@ export interface PermissionDTO {
 
 export interface CreateUserRequest {
   username: string;
+  firstName: string;
+  lastName: string;
   email: string;
   phoneNumber: string;
   password: string;
   roles: string[];
+  idProofType?: string | null;
+  idProofNumber?: string | null;
 }
 
 // ── Profile DTOs ───────────────────────────────────────────────────────────────
@@ -130,3 +134,89 @@ export interface AuthResponse {
   token: string;
 }
 
+// ── Billing & Payments (Phase 8) ──────────────────────────────────────────────
+
+export interface InvoiceItemDTO {
+  id: number;
+  invoiceId: number;
+  description: string;
+  amount: number;
+  quantity: number;
+}
+
+export interface InvoiceDTO {
+  id: number;
+  bookingId: number;
+  guestName: string;       // denormalized — avoid complex object graph
+  roomNumber: string;      // denormalized — avoid complex object graph
+  issuedDate: string;
+  dueDate: string;
+  totalAmount: number;
+  status: string;
+  items: InvoiceItemDTO[];
+}
+
+export interface PaymentDTO {
+  id: number;
+  bookingId: number;
+  amount: number;
+  paymentDate: string;
+  status: string;
+}
+
+export interface CompanyProfileDTO {
+  id: number;
+  companyName: string;
+  logoUrl: string | null;
+  address: string | null;
+  gstinNumber: string | null;
+  phoneNumber: string | null;
+  email: string | null;
+  website: string | null;
+  primaryColor: string | null;
+  accentColor: string | null;
+  fontFamily: string | null;
+}
+// ── Billing & Payments (Phase 8) ─────────────────────────────────────────────────
+
+export interface InvoiceItemDTO {
+  id: number;
+  invoiceId: number;
+  description: string;
+  amount: number;
+  quantity: number;
+}
+
+export interface InvoiceDTO {
+  id: number;
+  bookingId: number;
+  guestName: string;       // denormalized — avoid complex object graph
+  roomNumber: string;      // denormalized — avoid complex object graph
+  issuedDate: string;
+  dueDate: string;
+  totalAmount: number;
+  status: string;
+  items: InvoiceItemDTO[];
+}
+
+export interface PaymentDTO {
+  id: number;
+  bookingId: number;
+  amount: number;
+  paymentDate: string;
+  status: string;
+}
+
+export interface CompanyProfileDTO {
+  id: number;
+  companyName: string;
+  logoUrl: string | null;
+  address: string | null;
+  gstinNumber: string | null;
+  phoneNumber: string | null;
+  email: string | null;
+  website: string | null;
+  primaryColor: string | null;
+  accentColor: string | null;
+  fontFamily: string | null;
+}

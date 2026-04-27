@@ -22,6 +22,16 @@ namespace HotelManagementSystem.API.Profiles
             CreateMap<Payment, PaymentDTO>().ReverseMap();
             CreateMap<Amenity, AmenityDTO>().ReverseMap();
             CreateMap<Staff, StaffDTO>().ReverseMap();
+
+            // ── Billing & Payments (Phase 8) ──────────────────────────────────
+            CreateMap<Invoice, InvoiceDTO>()
+                .ForMember(dest => dest.GuestName,
+                    opt => opt.MapFrom(src => src.Booking != null ? src.Booking.User.UserName : string.Empty))
+                .ForMember(dest => dest.RoomNumber,
+                    opt => opt.MapFrom(src => src.Booking != null ? src.Booking.Room.RoomNumber : string.Empty))
+                .ReverseMap();
+            CreateMap<InvoiceItem, InvoiceItemDTO>().ReverseMap();
+            CreateMap<CompanyProfile, CompanyProfileDTO>().ReverseMap();
         }
     }
 }

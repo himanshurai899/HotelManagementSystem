@@ -1,0 +1,86 @@
+<mat-card class="page-card">
+  <mat-card-header>
+    <mat-icon mat-card-avatar>receipt_long</mat-icon>
+    <mat-card-title>Invoices</mat-card-title>
+    <mat-card-subtitle>{{ isAdmin() ? 'All invoices' : 'My invoices' }}</mat-card-subtitle>
+  </mat-card-header>
+
+  <mat-card-content>
+    <!-- Loading -->
+    <div *ngIf="loading()" class="spinner-wrap">
+      <mat-spinner diameter="40" />
+    </div>
+
+    <!-- Table -->
+    <div *ngIf="!loading()" class="table-wrap">
+      <table mat-table [dataSource]="invoices()" class="full-width">
+
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let row">{{ row.id }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="guestName">
+          <th mat-header-cell *matHeaderCellDef>Guest</th>
+          <td mat-cell *matCellDef="let row">{{ row.guestName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="roomNumber">
+          <th mat-header-cell *matHeaderCellDef>Room</th>
+          <td mat-cell *matCellDef="let row">{{ row.roomNumber }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="issuedDate">
+          <th mat-header-cell *matHeaderCellDef>Issued</th>
+          <td mat-cell *matCellDef="let row">{{ row.issuedDate | date:'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="dueDate">
+          <th mat-header-cell *matHeaderCellDef>Due</th>
+          <td mat-cell *matCellDef="let row">{{ row.dueDate | date:'mediumDate' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="totalAmount">
+          <th mat-header-cell *matHeaderCellDef>Amount</th>
+          <td mat-cell *matCellDef="let row">{{ row.totalAmount | currency:'INR':'symbol':'1.2-2' }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let row">
+            <mat-chip [color]="statusColorMap[row.status] || ''" highlighted>{{ row.status }}</mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let row">
+            <button mat-icon-button color="primary"
+                    matTooltip="Download PDF"
+                    (click)="downloadPdf(row.id)">
+              <mat-icon>picture_as_pdf</mat-icon>
+            </button>
+
+            <ng-container *ngIf="isAdmin()">
+              <button mat-icon-button color="accent"
+                      matTooltip="Mark Paid"
+                      (click)="updateStatus(row, 'Paid')">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+              <button mat-icon-button color="warn"
+                      matTooltip="Mark Overdue"
+                      (click)="updateStatus(row, 'Overdue')">
+                <mat-icon>warning</mat-icon>
+              </button>
+            </ng-container>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
+      </table>
+
+      <p *ngIf="invoices().length === 0" class="empty-msg">No invoices found.</p>
+    </div>
+  </mat-card-content>
+</mat-card>
