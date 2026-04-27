@@ -1,0 +1,57 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2><mat-icon>badge</mat-icon> Staff</h2>
+    <button mat-raised-button color="primary" (click)="openForm()"><mat-icon>add</mat-icon> Add Staff</button>
+  </div>
+  @if (loading()) { <div class="center"><mat-spinner></mat-spinner></div> }
+  @if (!loading()) {
+    <mat-card>
+      <table mat-table [dataSource]="items()" class="full-width">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+          <td mat-cell *matCellDef="let s">{{ s.firstName }} {{ s.lastName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let s">{{ s.email }}</td>
+        </ng-container>
+        <ng-container matColumnDef="position">
+          <th mat-header-cell *matHeaderCellDef>Position</th>
+          <td mat-cell *matCellDef="let s">{{ s.position }}</td>
+        </ng-container>
+        <ng-container matColumnDef="hireDate">
+          <th mat-header-cell *matHeaderCellDef>Hire Date</th>
+          <td mat-cell *matCellDef="let s">{{ s.hireDate | date:'mediumDate' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let s">
+            <button mat-icon-button (click)="openForm(s)"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button color="warn" (click)="delete(s.id)"><mat-icon>delete</mat-icon></button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+    </mat-card>
+  }
+  @if (showForm()) {
+    <mat-card class="form-card">
+      <mat-card-header><mat-card-title>{{ editId() ? 'Edit' : 'Add' }} Staff Member</mat-card-title></mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+          <mat-form-field appearance="outline"><mat-label>First Name</mat-label><input matInput formControlName="firstName" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Last Name</mat-label><input matInput formControlName="lastName" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Email</mat-label><input matInput type="email" formControlName="email" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Phone</mat-label><input matInput formControlName="phoneNumber" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Position</mat-label><input matInput formControlName="position" /></mat-form-field>
+          <mat-form-field appearance="outline"><mat-label>Hire Date</mat-label><input matInput type="date" formControlName="hireDate" /></mat-form-field>
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Save</button>
+            <button mat-button type="button" (click)="showForm.set(false)">Cancel</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

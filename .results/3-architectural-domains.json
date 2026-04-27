@@ -1,0 +1,76 @@
+{
+  "ui": {
+    "description": "Multi-client UI layer: Angular 19 (customer UI), Blazor Server (client app), Blazor Server (admin app)",
+    "required_patterns": {
+      "angular-components": "Standalone Angular components using @Component decorator with templateUrl/styleUrl; import Angular Material modules directly in the component's imports array",
+      "blazor-pages": "Razor pages with @page directive, @inject ApiClient for data access, OnInitializedAsync lifecycle hook for data loading",
+      "blazor-layout": "MainLayout.razor wraps all pages; NavMenu.razor provides navigation sidebar"
+    },
+    "architectural_constraints": {
+      "angular-components": "Components are standalone (no NgModules); Angular Material is used for UI primitives",
+      "blazor-pages": "Pages fetch data exclusively via injected ApiClient; no direct EF Core or repository injection in pages",
+      "data-binding": "Blazor pages use null-check pattern (@if (rooms == null)) with Loading... placeholder before data is available"
+    }
+  },
+  "routing": {
+    "description": "Angular router for the Angular UI; Blazor file-based routing (@page directive) for Blazor Client and Admin",
+    "required_patterns": {
+      "angular-routing": "Routes defined in app.routes.ts as a Routes array; components referenced directly (no lazy loading in current codebase)",
+      "blazor-routing": "Each page declares its route via @page \"/path\" directive at the top of the .razor file"
+    },
+    "architectural_constraints": {
+      "angular-routing": "Route definitions live exclusively in app.routes.ts; navigation links use RouterLink directive",
+      "blazor-routing": "Blazor router is configured in Routes.razor / App.razor; routes map 1:1 to .razor page files"
+    }
+  },
+  "data-layer": {
+    "description": "EF Core with SQL Server accessed exclusively through the generic IRepository<T> / Repository<T> pattern in the API",
+    "required_patterns": {
+      "repository-pattern": "All entity CRUD goes through IRepository<T>; controllers receive IRepository<T> via constructor injection",
+      "db-context": "HotelDbContext extends IdentityDbContext<User, Role, int>; all entities configured via OnModelCreating with unique index constraints and seed data",
+      "dto-mapping": "AutoMapper MappingProfile registers bidirectional maps for every entity ↔ DTO pair; DTOs are flat (no nested navigation objects)"
+    },
+    "architectural_constraints": {
+      "repository-pattern": "No direct DbContext or DbSet usage outside Repository<T>; no raw SQL in controllers",
+      "dtos": "DTOs must include denormalized string fields (e.g., RoomNumber, UserName) instead of nested entity references to avoid circular serialization",
+      "automapper": "All new entity/DTO pairs must be registered in MappingProfile.cs"
+    }
+  },
+  "auth": {
+    "description": "ASP.NET Core Identity for user/role management; JWT Bearer tokens for stateless API authentication; role-based and claim-based authorization policies",
+    "required_patterns": {
+      "jwt-generation": "JWT tokens are generated inside AccountController.GenerateJwtToken; includes user claims, role claims (fetched from RoleManager), and role membership claims",
+      "authorization": "Controllers use [Authorize(Roles = \"Administrator\")] and/or [Authorize(Policy = \"...\")] attributes; AccountController is [AllowAnonymous]",
+      "identity-config": "Identity options (password strength, lockout) configured in Program.cs via Configure<IdentityOptions>"
+    },
+    "architectural_constraints": {
+      "jwt": "Tokens expire in 30 minutes; signing uses HmacSha256 with a SecretKey from appsettings JwtSettings section",
+      "registration": "New users are always assigned the 'Customer' role and a 'Department:Sales' claim on registration",
+      "roles": "Three seeded roles: Administrator, Guest, Customer — defined in HotelDbContext seed data"
+    }
+  },
+  "api-layer": {
+    "description": "ASP.NET Core Web API providing RESTful endpoints consumed by Blazor and Angular clients via HttpClient-based ApiClient",
+    "required_patterns": {
+      "controller-structure": "Controllers use primary constructor injection; inherit ControllerBase; decorated with [Route(\"api/[controller]\")] and [ApiController]",
+      "api-client": "Both Blazor projects use an identical ApiClient class (HttpClient + IConfiguration) with generic GetAsync<T>, PostAsync<T>, PutAsync<T>, DeleteAsync methods; base URL from appsettings ApiBaseUrl"
+    },
+    "architectural_constraints": {
+      "controller-responses": "GET returns Ok(entity/list), POST returns CreatedAtAction, PUT returns NoContent, DELETE returns NoContent, not-found returns NotFound()",
+      "api-client": "All HTTP calls from Blazor/Angular go through ApiClient; no direct HttpClient usage in pages/components",
+      "swagger": "API is documented with Swagger; JWT Bearer security definition is always included"
+    }
+  },
+  "shared-library": {
+    "description": "HotelManagementSystem.Shared is the cross-cutting class library referenced by all other projects; contains models, DTOs, enums, interfaces, repositories, DB context, migrations, and utilities",
+    "required_patterns": {
+      "models": "Entity models are plain C# classes with int Id primary key; relationships expressed via navigation properties and foreign key int properties",
+      "enums": "Status enums (BookingStatus, PaymentStatus) are defined in Enums/ and referenced in models and DTOs",
+      "utilities": "Static utility classes (e.g., PasswordHasher) placed in Utilities/"
+    },
+    "architectural_constraints": {
+      "shared-references": "All projects reference HotelManagementSystem.Shared; no duplication of models or DTOs across projects",
+      "migrations": "EF Core migrations live in HotelManagementSystem.Shared/Migrations/"
+    }
+  }
+}

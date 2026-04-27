@@ -1,0 +1,32 @@
+.tab-actions { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+
+.create-card { margin-bottom: 16px; }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.center { display: flex; justify-content: center; padding: 32px; }
+
+.user-icon { margin-right: 8px; color: #7986cb; }
+.user-name { font-weight: 500; }
+
+.role-chip { font-size: 11px; margin: 0 4px; }
+.role-chip--superadmin { background: #fce4ec !important; }
+.role-chip--administrator { background: #e8eaf6 !important; }
+.role-chip--customer { background: #e0f2f1 !important; }
+.role-chip--guest { background: #fff8e1 !important; }
+
+.user-detail { padding: 12px 0; }
+.user-detail p { display: flex; align-items: center; gap: 8px; margin: 4px 0; color: #555; }
+
+.section-label { font-weight: 600; font-size: 12px; color: #888; text-transform: uppercase; margin: 12px 0 6px; }
+
+.chips-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+.add-btn { font-size: 12px; height: 28px; line-height: 28px; padding: 0 10px; }
+
+.delete-row { margin-top: 16px; }

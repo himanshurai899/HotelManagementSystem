@@ -1,0 +1,5 @@
+.dashboard-header { margin-bottom: 24px; h1 { display: flex; align-items: center; gap: 8px; font-size: 1.8rem; margin: 0; } }
+.rooms-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; margin: 16px 0 24px; }
+.room-card { transition: transform 0.15s; &:hover { transform: translateY(-4px); } }
+.cta { display: flex; gap: 12px; flex-wrap: wrap; }
+.center { display: flex; justify-content: center; padding: 40px; }

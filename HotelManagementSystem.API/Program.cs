@@ -4,11 +4,15 @@ using HotelManagementSystem.Shared.Data;
 using HotelManagementSystem.Shared.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using HotelManagementSystem.API.Middleware;
 using HotelManagementSystem.API.Profiles;
+using HotelManagementSystem.API.Services;
+using HotelManagementSystem.API.Swagger;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -16,6 +20,17 @@ if (string.IsNullOrEmpty(connectionString))
 {
     throw new InvalidOperationException("Connection string 'DefaultConnection' is not found or empty.");
 }
+
+// Serilog — fully configured from appsettings.json (Serilog section).
+// File sink writes to Logs/log-YYYYMMDD.txt (daily, 7-day retention).
+// MSSqlServer sink resolves the "DefaultConnection" name from ConnectionStrings
+// and auto-creates the dbo.Logs table on first write.
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services);
+});
 
 builder.Services.AddDbContext<HotelDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -56,11 +71,34 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 
+// File storage — switched via appsettings.json "StorageProvider": "Local" | "AzureBlob"
+var storageProvider = builder.Configuration["StorageProvider"] ?? "Local";
+if (storageProvider.Equals("AzureBlob", StringComparison.OrdinalIgnoreCase))
+    builder.Services.AddScoped<IFileStorageService, AzureBlobStorageService>();
+else
+    builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+
+// CORS — allow the Angular dev server and production origins
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AngularClient", policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:4200",   // Angular dev server
+                "https://localhost:4200"   // Angular dev server (HTTPS)
+              )
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "HotelManagementSystem API", Version = "v1" });
+    c.OperationFilter<FileUploadOperationFilter>();
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -113,11 +151,25 @@ builder.Services.AddAuthentication(options =>
 
 // Add authorization policies
 builder.Services.AddAuthorizationBuilder()
-                 .AddPolicy("ManageRooms", policy => policy.RequireClaim("Permission", "ManageRooms"))
-                 .AddPolicy("ManageRoles", policy => policy.RequireClaim("Permission", "ManageRoles"));
+                 .AddPolicy("ManageRooms",       policy => policy.RequireClaim("Permission", "ManageRooms"))
+                 .AddPolicy("ManageRoles",       policy => policy.RequireClaim("Permission", "ManageRoles"))
+                 .AddPolicy("ManageUsers",       policy => policy.RequireClaim("Permission", "ManageUsers"))
+                 .AddPolicy("ManagePermissions", policy => policy.RequireClaim("Permission", "ManagePermissions"))
+                 .AddPolicy("ManageRoomTypes",   policy => policy.RequireClaim("Permission", "ManageRoomTypes"))
+                 .AddPolicy("ManageAmenities",   policy => policy.RequireClaim("Permission", "ManageAmenities"))
+                 .AddPolicy("ManageStaff",       policy => policy.RequireClaim("Permission", "ManageStaff"))
+                 .AddPolicy("ManageBookings",    policy => policy.RequireClaim("Permission", "ManageBookings"))
+                 .AddPolicy("ViewReports",       policy => policy.RequireClaim("Permission", "ViewReports"));
 
 var app = builder.Build();
 // Configure the HTTP request pipeline.
+
+// Global exception handler — must be early so it wraps all subsequent middleware.
+app.UseMiddleware<GlobalExceptionMiddleware>();
+
+// Structured request logging via Serilog (method, path, status, elapsed-ms).
+app.UseSerilogRequestLogging();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -126,6 +178,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseRouting();
 
+// Serve wwwroot/uploads/ as /uploads/* (used by LocalFileStorageService)
+app.UseStaticFiles();
+
+app.UseCors("AngularClient");
+
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -133,7 +190,5 @@ app.MapControllers().RequireAuthorization();
 app.MapControllerRoute(
     name: "default",
     pattern: "api/{controller=Account}/{action=Login}/{id?}");
-
-app.Run();
 
 app.Run();

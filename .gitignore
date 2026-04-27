@@ -361,3 +361,6 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+HotelManagementSystem.API/HotelManagementSystem.API.csproj.lscache
+HotelManagementSystem.Shared/HotelManagementSystem.Shared.csproj.lscache
+HotelManagementSystem.Tests/HotelManagementSystem.Tests.csproj.lscache

@@ -1,0 +1,50 @@
+<div class="page-container">
+  <div class="page-header">
+    <mat-icon class="header-icon">admin_panel_settings</mat-icon>
+    <div>
+      <h2>Access Control</h2>
+      <p class="header-sub">
+        Manage users, roles and permissions from one place.
+        @if (isSuperAdmin()) {
+          <span class="superadmin-banner"><mat-icon>verified_user</mat-icon> You are logged in as <strong>SuperAdmin</strong> — full access enabled.</span>
+        }
+      </p>
+    </div>
+  </div>
+
+  <mat-card class="tabs-card">
+    <mat-tab-group animationDuration="200ms" color="primary">
+
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">people</mat-icon>
+          Users
+        </ng-template>
+        <div class="tab-content">
+          <app-users-tab />
+        </div>
+      </mat-tab>
+
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">shield</mat-icon>
+          Roles
+        </ng-template>
+        <div class="tab-content">
+          <app-roles-tab />
+        </div>
+      </mat-tab>
+
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">lock</mat-icon>
+          Permissions
+        </ng-template>
+        <div class="tab-content">
+          <app-permissions-tab />
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </mat-card>
+</div>

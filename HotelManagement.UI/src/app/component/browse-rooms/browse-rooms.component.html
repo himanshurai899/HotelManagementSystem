@@ -1,0 +1,52 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2><mat-icon>search</mat-icon> Browse Rooms</h2>
+  </div>
+
+  <div class="filters">
+    <mat-form-field appearance="outline">
+      <mat-label>Room Type</mat-label>
+      <mat-select [(ngModel)]="filterType" (ngModelChange)="applyFilter()">
+        <mat-option [value]="0">All Types</mat-option>
+        @for (t of roomTypes(); track t.id) {
+          <mat-option [value]="t.id">{{ t.name }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-chip-listbox>
+      <mat-chip-option (click)="filterAvailable.set(!filterAvailable()); applyFilter()"
+                       [selected]="filterAvailable()">
+        Available Only
+      </mat-chip-option>
+    </mat-chip-listbox>
+  </div>
+
+  @if (loading()) { <div class="center"><mat-spinner></mat-spinner></div> }
+
+  <div class="rooms-grid">
+    @for (room of rooms(); track room.id) {
+      <mat-card class="room-card">
+        <mat-card-header>
+          <mat-icon mat-card-avatar [color]="room.isAvailable ? 'primary' : ''">hotel</mat-icon>
+          <mat-card-title>Room {{ room.roomNumber }}</mat-card-title>
+          <mat-card-subtitle>{{ getTypeName(room.roomTypeId) }}</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="price">From ${{ getBasePrice(room.roomTypeId) }}/night</div>
+          <mat-chip [color]="room.isAvailable ? 'primary' : 'warn'" highlighted>
+            {{ room.isAvailable ? 'Available' : 'Occupied' }}
+          </mat-chip>
+        </mat-card-content>
+        @if (room.isAvailable) {
+          <mat-card-actions>
+            <a mat-raised-button color="primary" routerLink="/bookings">Book Now</a>
+          </mat-card-actions>
+        }
+      </mat-card>
+    }
+    @if (!loading() && rooms().length === 0) {
+      <p class="empty">No rooms match your filter.</p>
+    }
+  </div>
+</div>

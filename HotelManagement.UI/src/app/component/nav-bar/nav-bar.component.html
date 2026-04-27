@@ -1,10 +1,48 @@
-<mat-toolbar class="color-primary">
-    <mat-toolbar-row class="nav-menu">
-        <span>Hotel Management</span>
-        <div>
-            @for(menu of menus; track menu.route){
-                <a [routerLink]="menu.route" mat-button>{{menu.title}}</a>
-            }
-        </div>
-    </mat-toolbar-row>
+<!-- Session expiry prompt -->
+@if (auth.showRefreshPrompt()) {
+  <div class="refresh-banner">
+    <mat-icon>timer</mat-icon>
+    Your session is about to expire.
+    <a mat-button routerLink="/login" (click)="auth.dismissRefreshPrompt()">Sign in again</a>
+    <button mat-icon-button (click)="auth.dismissRefreshPrompt()"><mat-icon>close</mat-icon></button>
+  </div>
+}
+
+<mat-toolbar color="primary">
+  <mat-toolbar-row class="nav-menu">
+    <a routerLink="/" class="brand"><mat-icon>hotel</mat-icon> Hotel Management</a>
+
+    <div class="nav-links">
+      @for (menu of visibleMenus(); track menu.route) {
+        <a [routerLink]="menu.route" mat-button>
+          @if (menu.icon) { <mat-icon>{{ menu.icon }}</mat-icon> }
+          {{ menu.title }}
+        </a>
+      }
+    </div>
+
+    <div class="nav-end">
+      @if (auth.isLoggedIn()) {
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-btn">
+          @if (profilePhotoUrl()) {
+            <img [src]="profilePhotoUrl()" alt="avatar" class="nav-avatar" />
+          } @else {
+            <span class="nav-avatar-initials">{{ avatarInitials() }}</span>
+          }
+          {{ username() }}
+        </button>
+        <mat-menu #userMenu>
+          <a mat-menu-item routerLink="/profile">
+            <mat-icon>manage_accounts</mat-icon> My Profile
+          </a>
+          <button mat-menu-item (click)="logout()">
+            <mat-icon>logout</mat-icon> Logout
+          </button>
+        </mat-menu>
+      } @else {
+        <a routerLink="/login" mat-button><mat-icon>login</mat-icon> Sign In</a>
+        <a routerLink="/register" mat-button><mat-icon>app_registration</mat-icon> Register</a>
+      }
+    </div>
+  </mat-toolbar-row>
 </mat-toolbar>

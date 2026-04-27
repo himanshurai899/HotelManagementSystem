@@ -8,7 +8,13 @@ namespace HotelManagementSystem.API.Profiles
     {
         public MappingProfile()
         {
-            CreateMap<User, UserDTO>().ReverseMap();
+            CreateMap<User, UserDTO>()
+                .ForMember(dest => dest.Username,        opt => opt.MapFrom(src => src.UserName))
+                .ForMember(dest => dest.FirstName,       opt => opt.MapFrom(src => src.FirstName))
+                .ForMember(dest => dest.LastName,        opt => opt.MapFrom(src => src.LastName))
+                .ForMember(dest => dest.ProfilePhotoUrl, opt => opt.MapFrom(src => src.ProfilePhotoUrl))
+                .ReverseMap()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
             CreateMap<Role, RoleDTO>().ReverseMap();
             CreateMap<Room, RoomDTO>().ReverseMap();
             CreateMap<RoomType, RoomTypeDTO>().ReverseMap();

@@ -1,0 +1,116 @@
+<div class="auth-page">
+
+  <!-- ── Left hero panel ─────────────────────────────── -->
+  <div class="auth-hero">
+    <div class="hero-blob blob1"></div>
+    <div class="hero-blob blob2"></div>
+    <div class="hero-blob blob3"></div>
+
+    <div class="hero-body">
+      <div class="hero-brand">
+        <mat-icon>hotel</mat-icon>
+        <span>HotelMS</span>
+      </div>
+
+      <div class="hero-copy">
+        <h1>Start your<br>journey.</h1>
+        <p>Create an account and unlock<br>seamless hotel experiences.</p>
+      </div>
+
+      <div class="hero-features">
+        <div class="hf-item"><mat-icon>check_circle</mat-icon> Browse & book available rooms</div>
+        <div class="hf-item"><mat-icon>check_circle</mat-icon> Manage your reservations</div>
+        <div class="hf-item"><mat-icon>check_circle</mat-icon> Secure & instant access</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Right form panel ────────────────────────────── -->
+  <div class="auth-form-panel">
+    <div class="form-wrap">
+
+      <div class="form-header">
+        <h2>Create an account</h2>
+        <p>Fill in your details to get started</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
+
+        <div class="fields-row">
+          <div class="field-group">
+            <label>Username</label>
+            <div class="input-wrap" [class.has-error]="form.get('userName')?.invalid && form.get('userName')?.touched">
+              <mat-icon>person_outline</mat-icon>
+              <input formControlName="userName" placeholder="Choose a username" />
+            </div>
+            @if (form.get('userName')?.hasError('minlength') && form.get('userName')?.touched) {
+              <span class="field-error">Minimum 3 characters</span>
+            }
+          </div>
+
+          <div class="field-group">
+            <label>Phone Number</label>
+            <div class="input-wrap" [class.has-error]="form.get('phoneNumber')?.invalid && form.get('phoneNumber')?.touched">
+              <mat-icon>phone_outline</mat-icon>
+              <input formControlName="phoneNumber" placeholder="+1 000 000 0000" type="tel" />
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label>Email address</label>
+          <div class="input-wrap" [class.has-error]="form.get('email')?.invalid && form.get('email')?.touched">
+            <mat-icon>mail_outline</mat-icon>
+            <input formControlName="email" placeholder="you@example.com" type="email" autocomplete="email" />
+          </div>
+          @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+            <span class="field-error">Enter a valid email address</span>
+          }
+        </div>
+
+        <div class="field-group">
+          <label>Password</label>
+          <div class="input-wrap" [class.has-error]="form.get('password')?.invalid && form.get('password')?.touched">
+            <mat-icon>lock_outline</mat-icon>
+            <input formControlName="password"
+                   [type]="hidePassword() ? 'password' : 'text'"
+                   placeholder="Create a strong password"
+                   autocomplete="new-password" />
+            <button type="button" class="toggle-eye" (click)="hidePassword.set(!hidePassword())">
+              <mat-icon>{{ hidePassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+          </div>
+          @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
+            <span class="field-error">Minimum 6 characters</span>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="alert-error">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ error() }}</span>
+          </div>
+        }
+
+        <button type="submit" class="btn-primary" [disabled]="loading() || form.invalid">
+          @if (loading()) {
+            <mat-spinner diameter="20"></mat-spinner>
+            <span>Creating account…</span>
+          } @else {
+            <span>Create account</span>
+            <mat-icon>arrow_forward</mat-icon>
+          }
+        </button>
+
+      </form>
+
+      <p class="form-footer">
+        Already have an account?
+        <a routerLink="/login">Login now</a>
+      </p>
+
+    </div>
+  </div>
+
+</div>
+

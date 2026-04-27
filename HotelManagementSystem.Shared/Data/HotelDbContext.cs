@@ -74,7 +74,8 @@ namespace HotelManagementSystem.Shared.Data
             modelBuilder.Entity<Role>().HasData(
                 new Role { Id = 1, Name = "Administrator" , NormalizedName = "ADMINISTRATOR" },
                 new Role { Id = 2, Name = "Guest", NormalizedName = "GUEST" },
-                new Role { Id = 3, Name = "Customer", NormalizedName = "CUSTOMER" }
+                new Role { Id = 3, Name = "Customer", NormalizedName = "CUSTOMER" },
+                new Role { Id = 4, Name = "SuperAdmin", NormalizedName = "SUPERADMIN" }
             );
 
             // Seed Roles with claims
@@ -83,7 +84,19 @@ namespace HotelManagementSystem.Shared.Data
                 new IdentityRoleClaim<int> { Id = 2, RoleId = 1, ClaimType = "Permission", ClaimValue = "ManageRoles" },
                 new IdentityRoleClaim<int> { Id = 3, RoleId = 1, ClaimType = "Permission", ClaimValue = "ManageRooms" },
                 new IdentityRoleClaim<int> { Id = 4, RoleId = 2, ClaimType = "Permission", ClaimValue = "ViewDashboard" },
-                new IdentityRoleClaim<int> { Id = 5, RoleId = 3, ClaimType = "Permission", ClaimValue = "MakeBooking" }
+                new IdentityRoleClaim<int> { Id = 5, RoleId = 3, ClaimType = "Permission", ClaimValue = "MakeBooking" },
+                // SuperAdmin — every permission
+                new IdentityRoleClaim<int> { Id = 6,  RoleId = 4, ClaimType = "Permission", ClaimValue = "ManageUsers" },
+                new IdentityRoleClaim<int> { Id = 7,  RoleId = 4, ClaimType = "Permission", ClaimValue = "ManageRoles" },
+                new IdentityRoleClaim<int> { Id = 8,  RoleId = 4, ClaimType = "Permission", ClaimValue = "ManagePermissions" },
+                new IdentityRoleClaim<int> { Id = 9,  RoleId = 4, ClaimType = "Permission", ClaimValue = "ManageRooms" },
+                new IdentityRoleClaim<int> { Id = 10, RoleId = 4, ClaimType = "Permission", ClaimValue = "ManageRoomTypes" },
+                new IdentityRoleClaim<int> { Id = 11, RoleId = 4, ClaimType = "Permission", ClaimValue = "ManageAmenities" },
+                new IdentityRoleClaim<int> { Id = 12, RoleId = 4, ClaimType = "Permission", ClaimValue = "ManageStaff" },
+                new IdentityRoleClaim<int> { Id = 13, RoleId = 4, ClaimType = "Permission", ClaimValue = "ManageBookings" },
+                new IdentityRoleClaim<int> { Id = 14, RoleId = 4, ClaimType = "Permission", ClaimValue = "ViewReports" },
+                new IdentityRoleClaim<int> { Id = 15, RoleId = 4, ClaimType = "Permission", ClaimValue = "ViewDashboard" },
+                new IdentityRoleClaim<int> { Id = 16, RoleId = 4, ClaimType = "Permission", ClaimValue = "MakeBooking" }
             );
 
             // Seed Users
@@ -94,9 +107,12 @@ namespace HotelManagementSystem.Shared.Data
                     UserName = "admin",
                     NormalizedUserName = "ADMIN",
                     Email = "admin@example.com",
+                    NormalizedEmail = "ADMIN@EXAMPLE.COM",
+                    EmailConfirmed = true,
                     PasswordHash = new PasswordHasher<User>().HashPassword(null, "admin_password"),
                     RoleId = 1, // Administrator role
-                    PhoneNumber = "1234567890"
+                    PhoneNumber = "1234567890",
+                    SecurityStamp = "ADMIN-STATIC-STAMP-0001"
                 },
                 new User
                 {
@@ -104,9 +120,25 @@ namespace HotelManagementSystem.Shared.Data
                     UserName = "guest",
                     NormalizedUserName = "GUEST",
                     Email = "guest@example.com",
+                    NormalizedEmail = "GUEST@EXAMPLE.COM",
+                    EmailConfirmed = true,
                     PasswordHash = new PasswordHasher<User>().HashPassword(null, "guest_password"),
                     RoleId = 2, // Guest role
-                    PhoneNumber = "0987654321"
+                    PhoneNumber = "0987654321",
+                    SecurityStamp = "GUEST-STATIC-STAMP-0001"
+                },
+                new User
+                {
+                    Id = 3,
+                    UserName = "superadmin",
+                    NormalizedUserName = "SUPERADMIN",
+                    Email = "superadmin@example.com",
+                    NormalizedEmail = "SUPERADMIN@EXAMPLE.COM",
+                    EmailConfirmed = true,
+                    PasswordHash = new PasswordHasher<User>().HashPassword(null, "SuperAdmin@123"),
+                    RoleId = 4, // SuperAdmin role
+                    PhoneNumber = "1112223333",
+                    SecurityStamp = "SUPERADMIN-STATIC-STAMP-0001"
                 }
             );
 
@@ -115,13 +147,16 @@ namespace HotelManagementSystem.Shared.Data
                 new IdentityUserClaim<int> { Id = 1, UserId = 1, ClaimType = "Permission", ClaimValue = "FullAccess" },
                 new IdentityUserClaim<int> { Id = 2, UserId = 1, ClaimType = "Department", ClaimValue = "IT" },
                 new IdentityUserClaim<int> { Id = 3, UserId = 2, ClaimType = "Permission", ClaimValue = "LimitedAccess" },
-                new IdentityUserClaim<int> { Id = 4, UserId = 2, ClaimType = "Department", ClaimValue = "Sales" }
+                new IdentityUserClaim<int> { Id = 4, UserId = 2, ClaimType = "Department", ClaimValue = "Sales" },
+                new IdentityUserClaim<int> { Id = 5, UserId = 3, ClaimType = "Permission", ClaimValue = "FullAccess" },
+                new IdentityUserClaim<int> { Id = 6, UserId = 3, ClaimType = "Department", ClaimValue = "Management" }
             );
 
             // Seed UserRoles
             modelBuilder.Entity<IdentityUserRole<int>>().HasData(
-                new IdentityUserRole<int> { UserId = 1, RoleId = 1 }, // Assign admin role to admin user
-                new IdentityUserRole<int> { UserId = 2, RoleId = 2 }  // Assign guest role to guest user
+                new IdentityUserRole<int> { UserId = 1, RoleId = 1 }, // admin → Administrator
+                new IdentityUserRole<int> { UserId = 2, RoleId = 2 }, // guest → Guest
+                new IdentityUserRole<int> { UserId = 3, RoleId = 4 }  // superadmin → SuperAdmin
             );
 
             // Modify foreign key constraint to use ON DELETE NO ACTION

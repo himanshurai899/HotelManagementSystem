@@ -1,0 +1,25 @@
+.tab-actions { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+.create-card { margin-bottom: 16px; }
+.full-width { width: 100%; }
+.center { display: flex; justify-content: center; padding: 32px; }
+
+.role-icon { margin-right: 8px; color: #5c6bc0; }
+.role-name { font-weight: 500; }
+
+.superadmin-badge {
+  margin-left: 10px;
+  background: #b71c1c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  letter-spacing: 0.5px;
+}
+
+.role-detail { padding: 12px 0; }
+.section-label { font-weight: 600; font-size: 12px; color: #888; text-transform: uppercase; margin: 12px 0 6px; }
+.chips-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.empty-hint { color: #aaa; font-size: 13px; font-style: italic; }
+.add-btn { font-size: 12px; height: 28px; line-height: 28px; padding: 0 10px; }
+.delete-row { margin-top: 16px; }

@@ -1,0 +1,71 @@
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-icon"><mat-icon>admin_panel_settings</mat-icon></div>
+    <div>
+      <h1>Admin Dashboard</h1>
+      <p>Welcome back, Administrator — here's what's happening today.</p>
+    </div>
+  </div>
+  <div class="hero-decor"></div>
+</section>
+
+@if (loading()) {
+  <div class="center"><mat-spinner></mat-spinner></div>
+} @else {
+  <div class="stats-grid">
+    @for (stat of stats(); track stat.label) {
+      <mat-card class="stat-card" [routerLink]="stat.route" [style.--accent]="stat.color">
+        <mat-card-content>
+          <div class="stat-icon-wrap">
+            <mat-icon>{{ stat.icon }}</mat-icon>
+          </div>
+          <div class="stat-body">
+            <div class="stat-value">{{ stat.value }}</div>
+            <div class="stat-label">{{ stat.label }}</div>
+          </div>
+          <mat-icon class="arrow">arrow_forward</mat-icon>
+        </mat-card-content>
+      </mat-card>
+    }
+  </div>
+
+  <section class="quick-actions">
+    <div class="section-head">
+      <h3><mat-icon>flash_on</mat-icon> Quick Actions</h3>
+      <span>Jump straight into common admin tasks</span>
+    </div>
+    <div class="actions-row">
+      <a class="action-tile" routerLink="/rooms">
+        <mat-icon style="color:#1976d2">hotel</mat-icon>
+        <strong>Manage Rooms</strong>
+        <span>Add, update or remove rooms</span>
+      </a>
+      <a class="action-tile" routerLink="/staff">
+        <mat-icon style="color:#f57c00">badge</mat-icon>
+        <strong>Manage Staff</strong>
+        <span>Hotel staff & assignments</span>
+      </a>
+      <a class="action-tile" routerLink="/users">
+        <mat-icon style="color:#7b1fa2">manage_accounts</mat-icon>
+        <strong>Manage Users</strong>
+        <span>User accounts & roles</span>
+      </a>
+      <a class="action-tile" routerLink="/room-types">
+        <mat-icon style="color:#388e3c">category</mat-icon>
+        <strong>Room Types</strong>
+        <span>Configure room categories</span>
+      </a>
+      <a class="action-tile" routerLink="/amenities">
+        <mat-icon style="color:#00796b">spa</mat-icon>
+        <strong>Amenities</strong>
+        <span>Manage room amenities</span>
+      </a>
+      <a class="action-tile" routerLink="/bookings">
+        <mat-icon style="color:#c2185b">book_online</mat-icon>
+        <strong>All Bookings</strong>
+        <span>Review reservations</span>
+      </a>
+    </div>
+  </section>
+}
+

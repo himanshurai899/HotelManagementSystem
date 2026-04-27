@@ -159,6 +159,12 @@ namespace HotelManagementSystem.Shared.Migrations
                             Id = 3,
                             Name = "Customer",
                             NormalizedName = "CUSTOMER"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "SuperAdmin",
+                            NormalizedName = "SUPERADMIN"
                         });
                 });
 
@@ -292,6 +298,12 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("FirstName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -315,6 +327,9 @@ namespace HotelManagementSystem.Shared.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<string>("ProfilePhotoUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
@@ -359,15 +374,17 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "91c89de0-dd56-43d8-b663-a361f4bb70e1",
+                            ConcurrencyStamp = "d5880af9-461f-4008-94f9-13b42c53b109",
                             Email = "admin@example.com",
-                            EmailConfirmed = false,
+                            EmailConfirmed = true,
                             LockoutEnabled = false,
+                            NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEE1v9jn+YSdJz1asa6XAaWlGMH6ELZtjfwUKlRcfsmq4AeogMzefvL4UuWaehiUcKg==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENR5917pBnL6PyZ2XCDzO9iGSkb4DDzeqWl5LxZ+LZeSibPLW1rXUxM4hEBOoaoRHQ==",
                             PhoneNumber = "1234567890",
                             PhoneNumberConfirmed = false,
                             RoleId = 1,
+                            SecurityStamp = "ADMIN-STATIC-STAMP-0001",
                             TwoFactorEnabled = false,
                             UserName = "admin"
                         },
@@ -375,17 +392,37 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "4822fc11-f50f-4789-b252-76f1465d312a",
+                            ConcurrencyStamp = "9ec4f0a7-657c-4575-a08f-38144f8f842f",
                             Email = "guest@example.com",
-                            EmailConfirmed = false,
+                            EmailConfirmed = true,
                             LockoutEnabled = false,
+                            NormalizedEmail = "GUEST@EXAMPLE.COM",
                             NormalizedUserName = "GUEST",
-                            PasswordHash = "AQAAAAIAAYagAAAAEBcSfsMifuShfqNjRd2K7nI2oFzosZoZqQc0NNMYpPI/nfq7ZIh+uiiMgPqunKd16Q==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMk3zoKqMbwUDH9MaepyUR1laRnZPs1fZQjX1MX+/hX5GDvn7GHmj/RsixkKuaiF0Q==",
                             PhoneNumber = "0987654321",
                             PhoneNumberConfirmed = false,
                             RoleId = 2,
+                            SecurityStamp = "GUEST-STATIC-STAMP-0001",
                             TwoFactorEnabled = false,
                             UserName = "guest"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            AccessFailedCount = 0,
+                            ConcurrencyStamp = "5521121b-76a2-4f55-8694-d39a4145c9f3",
+                            Email = "superadmin@example.com",
+                            EmailConfirmed = true,
+                            LockoutEnabled = false,
+                            NormalizedEmail = "SUPERADMIN@EXAMPLE.COM",
+                            NormalizedUserName = "SUPERADMIN",
+                            PasswordHash = "AQAAAAIAAYagAAAAEGsc0cn5yzW7AlRbXoj9cHvH6NlsD3pJ72UZFOOKTbQt5CUW2gABFXTEVsBj3oGwzA==",
+                            PhoneNumber = "1112223333",
+                            PhoneNumberConfirmed = false,
+                            RoleId = 4,
+                            SecurityStamp = "SUPERADMIN-STATIC-STAMP-0001",
+                            TwoFactorEnabled = false,
+                            UserName = "superadmin"
                         });
                 });
 
@@ -447,6 +484,83 @@ namespace HotelManagementSystem.Shared.Migrations
                             ClaimType = "Permission",
                             ClaimValue = "MakeBooking",
                             RoleId = 3
+                        },
+                        new
+                        {
+                            Id = 6,
+                            ClaimType = "Permission",
+                            ClaimValue = "ManageUsers",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 7,
+                            ClaimType = "Permission",
+                            ClaimValue = "ManageRoles",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 8,
+                            ClaimType = "Permission",
+                            ClaimValue = "ManagePermissions",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 9,
+                            ClaimType = "Permission",
+                            ClaimValue = "ManageRooms",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 10,
+                            ClaimType = "Permission",
+                            ClaimValue = "ManageRoomTypes",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 11,
+                            ClaimType = "Permission",
+                            ClaimValue = "ManageAmenities",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 12,
+                            ClaimType = "Permission",
+                            ClaimValue = "ManageStaff",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 13,
+                            ClaimType = "Permission",
+                            ClaimValue = "ManageBookings",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 14,
+                            ClaimType = "Permission",
+                            ClaimValue = "ViewReports",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 15,
+                            ClaimType = "Permission",
+                            ClaimValue = "ViewDashboard",
+                            RoleId = 4
+                        },
+                        new
+                        {
+                            Id = 16,
+                            ClaimType = "Permission",
+                            ClaimValue = "MakeBooking",
+                            RoleId = 4
                         });
                 });
 
@@ -501,6 +615,20 @@ namespace HotelManagementSystem.Shared.Migrations
                             ClaimType = "Department",
                             ClaimValue = "Sales",
                             UserId = 2
+                        },
+                        new
+                        {
+                            Id = 5,
+                            ClaimType = "Permission",
+                            ClaimValue = "FullAccess",
+                            UserId = 3
+                        },
+                        new
+                        {
+                            Id = 6,
+                            ClaimType = "Department",
+                            ClaimValue = "Management",
+                            UserId = 3
                         });
                 });
 
@@ -549,6 +677,11 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             UserId = 2,
                             RoleId = 2
+                        },
+                        new
+                        {
+                            UserId = 3,
+                            RoleId = 4
                         });
                 });
 

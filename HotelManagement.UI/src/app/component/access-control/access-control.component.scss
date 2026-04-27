@@ -1,0 +1,53 @@
+.page-container { padding: 24px; max-width: 1200px; margin: 0 auto; }
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.header-icon {
+  font-size: 40px;
+  width: 40px;
+  height: 40px;
+  color: #5c6bc0;
+  margin-top: 4px;
+}
+
+.page-header h2 {
+  margin: 0 0 4px;
+  font-size: 24px;
+  font-weight: 600;
+  color: #333;
+}
+
+.header-sub {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.superadmin-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #b71c1c;
+  color: #fff;
+  padding: 2px 10px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 500;
+
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+}
+
+.tabs-card { padding: 0; overflow: hidden; }
+
+.tab-content { padding: 20px; }
+
+.tab-icon { margin-right: 6px; font-size: 18px; width: 18px; height: 18px; vertical-align: middle; }

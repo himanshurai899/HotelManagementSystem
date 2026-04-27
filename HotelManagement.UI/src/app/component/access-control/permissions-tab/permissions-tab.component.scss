@@ -1,0 +1,14 @@
+.center { display: flex; justify-content: center; padding: 32px; }
+.full-width { width: 100%; }
+
+.perm-name { display: flex; align-items: center; gap: 6px; font-weight: 500; }
+.perm-icon { font-size: 16px; width: 16px; height: 16px; color: #7986cb; }
+
+.chips-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.empty-hint { color: #aaa; font-size: 12px; font-style: italic; }
+
+.role-chip { font-size: 11px; }
+.role-chip--superadmin { background: #fce4ec !important; }
+.role-chip--administrator { background: #e8eaf6 !important; }
+.role-chip--customer { background: #e0f2f1 !important; }
+.role-chip--guest { background: #fff8e1 !important; }
