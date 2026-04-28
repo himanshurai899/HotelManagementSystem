@@ -19,7 +19,7 @@ namespace HotelManagementSystem.API.Controllers
         [Authorize(Roles = "Administrator,SuperAdmin")]
         public async Task<IActionResult> GetAll()
         {
-            var bookings = await _repo.GetAllAsync();
+            var bookings = await _repo.GetAllWithIncludesAsync(b => b.User, b => b.Room);
             return Ok(_mapper.Map<IEnumerable<BookingDTO>>(bookings));
         }
 
@@ -29,7 +29,7 @@ namespace HotelManagementSystem.API.Controllers
         public async Task<IActionResult> GetMyBookings()
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var all = await _repo.GetAllAsync();
+            var all = await _repo.GetAllWithIncludesAsync(b => b.User, b => b.Room);
             var mine = all.Where(b => b.UserId == userId);
             return Ok(_mapper.Map<IEnumerable<BookingDTO>>(mine));
         }
@@ -38,7 +38,7 @@ namespace HotelManagementSystem.API.Controllers
         [Authorize(Roles = "Administrator,SuperAdmin,Customer")]
         public async Task<IActionResult> GetById(int id)
         {
-            var booking = await _repo.GetByIdAsync(id);
+            var booking = await _repo.GetByIdWithIncludesAsync(id, b => b.User, b => b.Room);
             if (booking is null) return NotFound();
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             if (!User.IsInRole("Administrator") && !User.IsInRole("SuperAdmin") && booking.UserId != userId) return Forbid();
@@ -50,8 +50,15 @@ namespace HotelManagementSystem.API.Controllers
         public async Task<IActionResult> Create([FromBody] BookingDTO dto)
         {
             var booking = _mapper.Map<Booking>(dto);
+            booking.User = null!;
+            booking.Room = null!;
+            booking.Tenant = null!;
             // Always set UserId from token — prevents spoofing
             booking.UserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            if (HttpContext.Items.TryGetValue("TenantId", out var tid) && tid is int tenantId)
+            {
+                booking.TenantId = tenantId;
+            }
             await _repo.AddAsync(booking);
             return CreatedAtAction(nameof(GetById), new { id = booking.Id }, _mapper.Map<BookingDTO>(booking));
         }

@@ -10,6 +10,6 @@
         public string Position { get; set; }
         public DateTime HireDate { get; set; }
         public int TenantId { get; set; }
-        public string TenantName { get; set; } // To avoid complex object graph
+        public string? TenantName { get; set; } // To avoid complex object graph
     }
 }

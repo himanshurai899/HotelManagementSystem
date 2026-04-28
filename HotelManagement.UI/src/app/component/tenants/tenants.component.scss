@@ -1,0 +1,262 @@
+// ── Layout ──────────────────────────────────────────────────────────────
+.page-container {
+  padding: 24px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    color: #7b1fa2;
+  }
+
+  h2 { margin: 0; font-size: 1.5rem; font-weight: 600; }
+
+  .subtitle { margin: 2px 0 0; color: #666; font-size: 0.85rem; }
+}
+
+// ── SuperAdmin badge ─────────────────────────────────────────────────────
+.superadmin-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #4a148c, #7b1fa2);
+  color: #fff;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  margin-bottom: 20px;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+// ── Accordion ────────────────────────────────────────────────────────────
+.accordion-card {
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  padding: 0;
+
+  mat-accordion { display: block; }
+}
+
+// Panel header layout
+.tenant-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+
+  .domain-icon { color: #7b1fa2; flex-shrink: 0; }
+
+  .tenant-name-text {
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: block;
+    line-height: 1.3;
+  }
+
+  .subdomain-tag {
+    background: #f3e5f5;
+    color: #4a148c;
+    padding: 1px 7px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.78rem;
+    display: block;
+    margin-top: 2px;
+  }
+}
+
+.tenant-desc {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 2px 9px;
+  border-radius: 12px;
+
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+
+  &.active  { background: #e8f5e9; color: #2e7d32; }
+  &.inactive { background: #fce4ec; color: #c62828; }
+}
+
+.created-date { font-size: 0.8rem; color: #888; }
+
+// ── Expanded tenant detail ───────────────────────────────────────────────
+.tenant-detail { padding: 8px 0 4px; }
+
+.action-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+// ── Members section ──────────────────────────────────────────────────────
+.members-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 16px 0 12px;
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4a148c;
+  padding-top: 8px;
+}
+
+.members-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+
+  .add-user-select {
+    width: 220px;
+    font-size: 0.85rem;
+  }
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.member-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  transition: background 0.15s;
+
+  &:hover { background: #f3e5f5; }
+}
+
+.member-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #7b1fa2;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.member-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.member-name     { font-weight: 600; font-size: 0.9rem; }
+.member-username { font-size: 0.78rem; color: #555; }
+.member-role     { font-size: 0.78rem; color: #7b1fa2; font-style: italic; }
+.member-since    { font-size: 0.75rem; color: #999; }
+
+.user-option-sub { font-size: 0.78rem; color: #999; margin-left: 4px; }
+
+.center-small {
+  display: flex;
+  justify-content: center;
+  padding: 20px;
+}
+
+.empty-members {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  color: #aaa;
+  font-size: 0.88rem;
+  border: 1px dashed #e0e0e0;
+  border-radius: 8px;
+  justify-content: center;
+
+  mat-icon { font-size: 20px; width: 20px; height: 20px; }
+}
+
+// ── Shared helpers ───────────────────────────────────────────────────────
+.center {
+  display: flex;
+  justify-content: center;
+  padding: 48px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  color: #999;
+
+  mat-icon { font-size: 48px; width: 48px; height: 48px; display: block; margin: 0 auto 12px; }
+}
+
+// ── Create / Edit form ───────────────────────────────────────────────────
+.form-card {
+  border-radius: 12px;
+  border-left: 4px solid #7b1fa2;
+  margin-top: 20px;
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    padding-top: 12px;
+
+    mat-form-field { width: 100%; }
+
+    .toggle-row {
+      grid-column: 1 / -1;
+      padding: 8px 0;
+    }
+
+    .form-actions {
+      grid-column: 1 / -1;
+      display: flex;
+      gap: 12px;
+      padding-top: 4px;
+    }
+  }
+}

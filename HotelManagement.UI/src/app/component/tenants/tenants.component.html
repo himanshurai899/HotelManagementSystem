@@ -1,0 +1,180 @@
+<div class="page-container">
+  <div class="page-header">
+    <div class="header-left">
+      <mat-icon class="header-icon">domain</mat-icon>
+      <div>
+        <h2>Tenant / Company Management</h2>
+        <p class="subtitle">Manage all registered organisations on this platform</p>
+      </div>
+    </div>
+    <button mat-raised-button color="primary" (click)="openForm()">
+      <mat-icon>add</mat-icon> New Tenant
+    </button>
+  </div>
+
+  <div class="superadmin-badge">
+    <mat-icon>verified_user</mat-icon>
+    SuperAdmin exclusive â€” only you can create, edit or delete tenants
+  </div>
+
+  @if (loading()) {
+    <div class="center"><mat-spinner></mat-spinner></div>
+  }
+
+  @if (!loading()) {
+    <mat-card class="accordion-card">
+      <mat-accordion multi>
+        @for (t of items(); track t.id) {
+          <mat-expansion-panel (opened)="loadTenantUsers(t.id)">
+
+            <!-- â”€â”€ Panel Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <mat-expansion-panel-header>
+              <mat-panel-title class="tenant-title">
+                <mat-icon class="domain-icon">business</mat-icon>
+                <div>
+                  <span class="tenant-name-text">{{ t.name }}</span>
+                  <code class="subdomain-tag">{{ t.subdomain }}</code>
+                </div>
+              </mat-panel-title>
+              <mat-panel-description class="tenant-desc">
+                <mat-chip [color]="planColor(t.plan)" highlighted>{{ t.plan }}</mat-chip>
+                <span class="status-badge" [class.active]="t.isActive" [class.inactive]="!t.isActive">
+                  <mat-icon>{{ t.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+                  {{ t.isActive ? 'Active' : 'Inactive' }}
+                </span>
+                <span class="created-date">{{ t.createdAt | date:'mediumDate' }}</span>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+
+            <!-- â”€â”€ Expanded Detail â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+            <div class="tenant-detail">
+
+              <!-- Actions row -->
+              <div class="action-row">
+                <button mat-stroked-button (click)="openForm(t)">
+                  <mat-icon>edit</mat-icon> Edit Tenant
+                </button>
+                <button mat-stroked-button color="warn" (click)="delete(t.id, t.name)">
+                  <mat-icon>delete</mat-icon> Delete
+                </button>
+              </div>
+
+              <mat-divider></mat-divider>
+
+              <!-- â”€â”€ Members section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+              <div class="members-header">
+                <div class="section-label"><mat-icon>group</mat-icon> Members</div>
+                <div class="members-actions">
+                  <!-- Add existing user -->
+                  <mat-form-field appearance="outline" class="add-user-select">
+                    <mat-label>Add existing user</mat-label>
+                    <mat-select (selectionChange)="addUserToTenant(t.id, $event.value)">
+                      @for (u of availableUsers(t.id); track u.id) {
+                        <mat-option [value]="u.id">
+                          {{ u.firstName }} {{ u.lastName }}
+                          <span class="user-option-sub">{{ '@' + u.username }}</span>
+                        </mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+                  <!-- Create brand-new user & add -->
+                  <button mat-raised-button color="primary" (click)="openCreateUserDialog(t.id)">
+                    <mat-icon>person_add</mat-icon> New User
+                  </button>
+                </div>
+              </div>
+
+              @if (loadingTenantUsers()[t.id]) {
+                <div class="center-small"><mat-spinner diameter="28"></mat-spinner></div>
+              } @else {
+                <div class="members-list">
+                  @for (m of tenantUsers()[t.id]; track m.userId) {
+                    <div class="member-card">
+                      <span class="member-avatar">{{ (m.firstName || m.userName).slice(0,2).toUpperCase() }}</span>
+                      <div class="member-info">
+                        <span class="member-name">{{ m.firstName }} {{ m.lastName }}</span>
+                        <span class="member-username">&#64;{{ m.userName }} &bull; {{ m.email }}</span>
+                        @if (m.tenantRole) {
+                          <span class="member-role">{{ m.tenantRole }}</span>
+                        }
+                        <span class="member-since">Joined {{ m.joinedAt | date:'mediumDate' }}</span>
+                      </div>
+                      <button mat-icon-button color="warn"
+                              matTooltip="Remove from tenant"
+                              (click)="removeUserFromTenant(t.id, m.userId, m.userName)">
+                        <mat-icon>person_remove</mat-icon>
+                      </button>
+                    </div>
+                  }
+                  @if (!tenantUsers()[t.id]?.length) {
+                    <div class="empty-members">
+                      <mat-icon>group_off</mat-icon>
+                      <span>No members yet â€” add an existing user or create a new one above</span>
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          </mat-expansion-panel>
+        }
+      </mat-accordion>
+
+      @if (items().length === 0) {
+        <div class="empty-state">
+          <mat-icon>domain_disabled</mat-icon>
+          <p>No tenants registered yet. Click <strong>New Tenant</strong> to add the first one.</p>
+        </div>
+      }
+    </mat-card>
+  }
+
+  <!-- Create / Edit form panel -->
+  @if (showForm()) {
+    <mat-card class="form-card">
+      <mat-card-header>
+        <mat-card-title>{{ editId() ? 'Edit Tenant' : 'Create New Tenant' }}</mat-card-title>
+        <mat-card-subtitle>{{ editId() ? 'Update company details' : 'Register a new organisation on the platform' }}</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+          <mat-form-field appearance="outline">
+            <mat-label>Company / Tenant Name</mat-label>
+            <mat-icon matPrefix>business</mat-icon>
+            <input matInput formControlName="name" placeholder="e.g. Grand Palace Hotels" />
+            @if (form.get('name')?.hasError('required')) { <mat-error>Name is required</mat-error> }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Subdomain</mat-label>
+            <mat-icon matPrefix>link</mat-icon>
+            <input matInput formControlName="subdomain" placeholder="e.g. grand-palace" />
+            <mat-hint>Lowercase letters, numbers and hyphens only</mat-hint>
+            @if (form.get('subdomain')?.hasError('required')) { <mat-error>Subdomain is required</mat-error> }
+            @if (form.get('subdomain')?.hasError('pattern'))  { <mat-error>Only a-z, 0-9 and hyphens allowed</mat-error> }
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Plan</mat-label>
+            <mat-icon matPrefix>workspace_premium</mat-icon>
+            <mat-select formControlName="plan">
+              @for (p of plans; track p) { <mat-option [value]="p">{{ p }}</mat-option> }
+            </mat-select>
+          </mat-form-field>
+
+          <div class="toggle-row">
+            <mat-slide-toggle formControlName="isActive" color="primary">
+              Active (tenant can access the platform)
+            </mat-slide-toggle>
+          </div>
+
+          <div class="form-actions">
+            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
+              <mat-icon>save</mat-icon> {{ editId() ? 'Update' : 'Create' }}
+            </button>
+            <button mat-button type="button" (click)="showForm.set(false)">Cancel</button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  }
+</div>

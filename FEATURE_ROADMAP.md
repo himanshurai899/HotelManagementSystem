@@ -10,10 +10,10 @@
 | Phase | Feature Area | Status |
 |---|---|---|
 | 8 | Billing & Payments | ✅ Done |
-| 9 | Multi-Tenant SaaS | ⬜ Planned |
+| 9 | Multi-Tenant SaaS | ✅ Done |
 | 10 | Import / Export | ⬜ Planned |
 | 11 | UX Enhancements | ⬜ Planned |
-| 12 | Advanced Booking | ⬜ Planned |
+| 12 | Advanced Booking | 🔄 In Progress |
 | 13 | Customer Experience & Security | ⬜ Planned |
 | 14 | Multi-Hotel Ownership | ⬜ Planned |
 | 15 | KPI Dashboard & Analytics | ⬜ Planned |
@@ -211,6 +211,63 @@ export interface Tenant {
 - Controllers that return tenant-scoped data must filter by `TenantId` extracted from `HttpContext.Items["TenantId"]`
 - Do NOT return cross-tenant data from any endpoint unless role is `SuperAdmin`
 - JWT generation in `AccountController` must include a `TenantId` claim on login
+
+### Implementation Record (✅ Done)
+
+#### Extra — Beyond Original Roadmap
+
+| Addition | Detail |
+|---|---|
+| `Shared/Models/UserTenant.cs` | Join entity for many-to-many user ↔ tenant relationship; fields: `UserId`, `TenantId`, `TenantRole?`, `JoinedAt` |
+| `Shared/DTOs/UserTenantDTO.cs` | Flat DTO — `string UserName`, `string TenantName` (denormalized) |
+| `TenantsController` user sub-endpoints | `GET /api/tenants/{id}/users`, `POST /api/tenants/{id}/users`, `DELETE /api/tenants/{id}/users/{userId}` |
+| `ManageTenants` policy | `Permission = "ManageTenants"` added to `Program.cs` `AddAuthorizationBuilder()` |
+| `SuperAdmin` role seeded | `Id = 4`, `Name = "SuperAdmin"` with all permission claims; `superadmin` user seeded (email: `superadmin@example.com`, password: `SuperAdmin@123`) |
+| Angular `TenantsComponent` | Full CRUD + expand-to-see-users panel; route `/tenants`, `data: { roles: ['SuperAdmin'] }` |
+
+#### Verified Implemented Items
+
+| Item | Status |
+|---|---|
+| `Shared/Models/Tenant.cs` | ✅ |
+| `Shared/Enums/TenantPlan.cs` (`Free`, `Pro`, `Enterprise`) | ✅ |
+| `TenantId` FK on `Room`, `Booking`, `Staff`, `RoomType`, `Amenity`, `Invoice` | ✅ |
+| `HotelDbContext` — `DbSet<Tenant>`, unique index on `Subdomain`, `UserTenant` composite PK | ✅ |
+| EF Core migration generated | ✅ |
+| `TenantResolverMiddleware` — JWT claim → `X-Tenant-Id` header fallback | ✅ |
+| Registered in `Program.cs` after `UseAuthentication` | ✅ |
+| `TenantsController` CRUD + `[Authorize(Roles = "SuperAdmin")]` | ✅ |
+| JWT login response includes `TenantId` claim (primary tenant from `UserTenant`) | ✅ |
+| Angular `TenantsComponent` + route + `menus.ts` nav entry | ✅ |
+| `TenantDTO` + `UserTenantDTO` TypeScript interfaces in `api.models.ts` | ✅ |
+
+#### ⚠️ Remaining Gap — Tenant-Filtered GET Endpoints
+
+The CREATE endpoints correctly set `TenantId` from `HttpContext.Items["TenantId"]`. However, **GET list endpoints** (`GetAll`) for tenanted controllers currently return data from **all tenants** when called by an `Administrator` — they do not filter by `TenantId`. This means cross-tenant data can leak.
+
+**Affected controllers:**
+- `RoomsController.GetAll()`
+- `BookingsController.GetAll()`
+- `StaffController.GetAll()`
+- `RoomTypesController.GetAll()`
+- `AmenitiesController.GetAll()`
+- `InvoicesController.GetAll()`
+
+**Fix pattern** (to apply to each `GetAll` action):
+```csharp
+public async Task<IActionResult> GetAll()
+{
+    var all = await _repo.GetAllAsync();
+    if (!User.IsInRole("SuperAdmin") &&
+        HttpContext.Items.TryGetValue("TenantId", out var tid) && tid is int tenantId)
+    {
+        all = all.Where(e => e.TenantId == tenantId);
+    }
+    return Ok(_mapper.Map<IEnumerable<TDto>>(all));
+}
+```
+
+This fix should be applied before Phase 14 (Multi-Hotel Ownership) which depends on correct tenant isolation.
 
 ---
 
@@ -529,6 +586,10 @@ Allow returning customers to quickly rebook from their past stays with pre-fille
 
 Support sub-day bookings priced by the hour (day-use rooms).
 
+> **✅ Pre-work done:** `bool AllowHourlyStay` added to `Room.cs`, `RoomDTO.cs`, and `api.models.ts` (`RoomDTO.allowHourlyStay`).  
+> The `BookingsComponent` datepicker already reads this flag: when the selected room has `allowHourlyStay = true`, same-day checkout is permitted; otherwise checkout must be at least the next day.  
+> Remaining work: `HourlyRate`, `BookingType` enum, time pickers, price calculation.
+
 #### New / Modified Files
 
 | File | Change |
@@ -537,9 +598,9 @@ Support sub-day bookings priced by the hour (day-use rooms).
 | `Shared/Models/Booking.cs` | Add `BookingType Type`; add `TimeSpan? CheckInTime`, `TimeSpan? CheckOutTime` for hourly stays |
 | `Shared/DTOs/BookingDTO.cs` | Add `string BookingType`, `string? CheckInTime`, `string? CheckOutTime` |
 | `API/Controllers/BookingsController.cs` | Compute price as `HourlyRate × hours` when `Type = Hourly` |
-| `Shared/Models/Room.cs` | Add `decimal? HourlyRate` (nullable — not all rooms support hourly) |
-| `Shared/DTOs/RoomDTO.cs` | Add `decimal? HourlyRate` |
-| Angular `BookingsComponent` | Toggle between `Nightly` / `Hourly` mode; show time pickers for hourly |
+| `Shared/Models/Room.cs` | ~~`bool AllowHourlyStay`~~ ✅ Done · Add `decimal? HourlyRate` (nullable — not all rooms support hourly) |
+| `Shared/DTOs/RoomDTO.cs` | ~~`allowHourlyStay`~~ ✅ Done · Add `decimal? HourlyRate` |
+| Angular `BookingsComponent` | ~~Date picker respects `allowHourlyStay`~~ ✅ Done · Add `MatButtonToggle` for booking type; show time pickers for hourly |
 
 #### Scaffold Steps
 

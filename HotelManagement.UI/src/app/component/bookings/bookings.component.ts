@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DatePipe, DecimalPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -11,6 +11,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { BookingDTO, RoomDTO, BOOKING_STATUS_LABELS } from '../../model/api.models';
@@ -21,7 +23,8 @@ import { BookingDTO, RoomDTO, BOOKING_STATUS_LABELS } from '../../model/api.mode
   imports: [
     ReactiveFormsModule, DatePipe, DecimalPipe, MatTableModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatChipsModule, MatProgressSpinnerModule, MatSnackBarModule
+    MatChipsModule, MatProgressSpinnerModule, MatSnackBarModule,
+    MatDatepickerModule, MatNativeDateModule
   ],
   templateUrl: './bookings.component.html',
   styleUrl: './bookings.component.scss'
@@ -47,15 +50,89 @@ export class BookingsComponent implements OnInit {
   statusLabels = BOOKING_STATUS_LABELS;
   displayedColumns = ['roomNumber', 'checkIn', 'checkOut', 'total', 'status', 'actions'];
 
+  /** Minimum selectable check-in date — today (no past dates) */
+  readonly minCheckInDate = new Date();
+
+  /** Default check-in date value pre-filled to today */
+  readonly defaultCheckInDate = new Date();
+
+  /** Minimum check-out date — updated reactively when room or check-in changes */
+  minCheckOutDate = signal<Date>(this._tomorrowFrom(new Date()));
+
   form = this.fb.group({
     roomId: [0, Validators.required],
-    checkInDate: ['', Validators.required],
-    checkOutDate: ['', Validators.required]
+    checkInDate: [this.defaultCheckInDate, Validators.required],
+    checkOutDate: [null as Date | null, Validators.required]
   });
 
   ngOnInit() {
     this.loadBookings();
-    this.api.get<RoomDTO[]>('rooms').subscribe({ next: d => this.rooms.set(d.filter(r => r.isAvailable)) });
+    this.api.get<RoomDTO[]>('rooms').subscribe({
+      next: d => {
+        this.rooms.set(d.filter(r => r.isAvailable));
+        // Set initial default check-in to next full hour
+        this.form.patchValue({ checkInDate: this._nextHour() });
+      }
+    });
+
+    // When room selection changes, recompute checkout min date
+    this.form.get('roomId')!.valueChanges.subscribe(roomId => {
+      this._updateCheckOutMin(roomId ?? 0);
+    });
+
+    // When check-in changes, push checkout min forward accordingly
+    this.form.get('checkInDate')!.valueChanges.subscribe(checkIn => {
+      const roomId = this.form.get('roomId')!.value ?? 0;
+      this._updateCheckOutMin(roomId, checkIn as Date | null);
+      // Clear checkout if it's now before the new min
+      const currentOut = this.form.get('checkOutDate')!.value as Date | null;
+      if (currentOut && currentOut < this.minCheckOutDate()) {
+        this.form.patchValue({ checkOutDate: null });
+      }
+    });
+  }
+
+  /** Returns the next full hour from now as a Date */
+  private _nextHour(): Date {
+    const d = new Date();
+    d.setMinutes(0, 0, 0);
+    d.setHours(d.getHours() + 1);
+    return d;
+  }
+
+  /** Returns tomorrow at midnight relative to a given date */
+  private _tomorrowFrom(date: Date): Date {
+    const d = new Date(date);
+    d.setDate(d.getDate() + 1);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  /** Today's date at midnight */
+  private _today(): Date {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private _updateCheckOutMin(roomId: number, checkIn?: Date | null) {
+    const room = this.rooms().find(r => r.id === roomId);
+    const baseDate = checkIn ?? (this.form.get('checkInDate')!.value as Date | null) ?? new Date();
+    if (room?.allowHourlyStay) {
+      // Hourly stays: checkout can be same day — set min to check-in date itself (today)
+      const min = new Date(baseDate);
+      min.setHours(0, 0, 0, 0);
+      this.minCheckOutDate.set(min);
+    } else {
+      // Nightly stays: checkout must be at least the next day
+      this.minCheckOutDate.set(this._tomorrowFrom(baseDate));
+    }
+  }
+
+  /** True if the selected room supports hourly stay */
+  get selectedRoomIsHourly(): boolean {
+    const roomId = this.form.get('roomId')!.value ?? 0;
+    return this.rooms().find(r => r.id === roomId)?.allowHourlyStay ?? false;
   }
 
   loadBookings() {
@@ -69,8 +146,21 @@ export class BookingsComponent implements OnInit {
 
   save() {
     if (this.form.invalid) return;
-    this.api.post<BookingDTO>('bookings', { ...this.form.value, id: 0, status: 0 }).subscribe({
-      next: () => { this.snack.open('Booking created!', '', { duration: 2000 }); this.showForm.set(false); this.loadBookings(); },
+    const val = this.form.value;
+    const checkIn = val.checkInDate ? new Date(val.checkInDate) : null;
+    const checkOut = val.checkOutDate ? new Date(val.checkOutDate) : null;
+    this.api.post<BookingDTO>('bookings', {
+      id: 0,
+      status: 0,
+      roomId: val.roomId,
+      checkInDate: checkIn?.toISOString(),
+      checkOutDate: checkOut?.toISOString()
+    }).subscribe({
+      next: () => {
+        this.snack.open('Booking created!', '', { duration: 2000 });
+        this.showForm.set(false);
+        this.loadBookings();
+      },
       error: () => this.snack.open('Error creating booking.', 'Dismiss', { duration: 3000 })
     });
   }

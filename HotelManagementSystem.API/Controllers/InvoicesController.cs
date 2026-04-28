@@ -59,6 +59,11 @@ namespace HotelManagementSystem.API.Controllers
         public async Task<IActionResult> Create([FromBody] InvoiceDTO dto)
         {
             var invoice = _mapper.Map<Invoice>(dto);
+            invoice.Tenant = null!;
+            if (HttpContext.Items.TryGetValue("TenantId", out var tid) && tid is int tenantId)
+            {
+                invoice.TenantId = tenantId;
+            }
             await _repo.AddAsync(invoice);
             return CreatedAtAction(nameof(GetById), new { id = invoice.Id }, _mapper.Map<InvoiceDTO>(invoice));
         }

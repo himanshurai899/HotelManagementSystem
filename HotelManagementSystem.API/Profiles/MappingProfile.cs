@@ -16,9 +16,20 @@ namespace HotelManagementSystem.API.Profiles
                 .ReverseMap()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.Username));
             CreateMap<Role, RoleDTO>().ReverseMap();
-            CreateMap<Room, RoomDTO>().ReverseMap();
+            CreateMap<Room, RoomDTO>()
+                .ForMember(dest => dest.RoomTypeName,
+                    opt => opt.MapFrom(src => src.RoomType != null ? src.RoomType.Name : string.Empty))
+                .ReverseMap()
+                .ForMember(dest => dest.RoomType, opt => opt.Ignore());
             CreateMap<RoomType, RoomTypeDTO>().ReverseMap();
-            CreateMap<Booking, BookingDTO>().ReverseMap();
+            CreateMap<Booking, BookingDTO>()
+                .ForMember(dest => dest.UserName,
+                    opt => opt.MapFrom(src => src.User != null ? src.User.UserName : string.Empty))
+                .ForMember(dest => dest.RoomNumber,
+                    opt => opt.MapFrom(src => src.Room != null ? src.Room.RoomNumber : string.Empty))
+                .ReverseMap()
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.Room, opt => opt.Ignore());
             CreateMap<Payment, PaymentDTO>().ReverseMap();
             CreateMap<Amenity, AmenityDTO>().ReverseMap();
             CreateMap<Staff, StaffDTO>().ReverseMap();
@@ -36,9 +47,11 @@ namespace HotelManagementSystem.API.Profiles
             // ── Multi-Tenant SaaS (Phase 9) ───────────────────────────────────
             CreateMap<Tenant, TenantDTO>().ReverseMap();
             CreateMap<UserTenant, UserTenantDTO>()
-                .ForMember(dest => dest.UserName,   opt => opt.MapFrom(src => src.User != null ? src.User.UserName : string.Empty))
-                .ForMember(dest => dest.TenantName, opt => opt.MapFrom(src => src.Tenant != null ? src.Tenant.Name : string.Empty))
-                .ReverseMap();
+                .ForMember(dest => dest.UserName,   opt => opt.MapFrom(src => src.User != null ? src.User.UserName  : string.Empty))
+                .ForMember(dest => dest.FirstName,  opt => opt.MapFrom(src => src.User != null ? src.User.FirstName ?? string.Empty : string.Empty))
+                .ForMember(dest => dest.LastName,   opt => opt.MapFrom(src => src.User != null ? src.User.LastName  ?? string.Empty : string.Empty))
+                .ForMember(dest => dest.Email,      opt => opt.MapFrom(src => src.User != null ? src.User.Email     ?? string.Empty : string.Empty))
+                .ForMember(dest => dest.TenantName, opt => opt.MapFrom(src => src.Tenant != null ? src.Tenant.Name : string.Empty));
         }
     }
 }

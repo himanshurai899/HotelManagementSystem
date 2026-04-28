@@ -15,6 +15,7 @@ export interface RoomDTO {
   roomTypeId: number;
   roomTypeName: string;
   isAvailable: boolean;
+  allowHourlyStay: boolean;
 }
 
 export interface AmenityDTO {
@@ -52,6 +53,18 @@ export interface ClaimDTO {
   value: string;
 }
 
+export interface UserTenantDTO {
+  userId: number;
+  userName: string;       // denormalized — avoid complex object graph
+  firstName: string;      // denormalized — avoid complex object graph
+  lastName: string;       // denormalized — avoid complex object graph
+  email: string;          // denormalized — avoid complex object graph
+  tenantId: number;
+  tenantName: string;     // denormalized — avoid complex object graph
+  tenantRole: string | null;
+  joinedAt: string;
+}
+
 export interface RoleDTO {
   id: number;
   name: string;
@@ -70,6 +83,7 @@ export interface UserDTO {
   roleName: string;
   roles: string[];
   claims: ClaimDTO[];
+  tenants?: UserTenantDTO[];
 }
 
 export interface PermissionDTO {
@@ -85,6 +99,7 @@ export interface CreateUserRequest {
   phoneNumber: string;
   password: string;
   roles: string[];
+  claims: ClaimDTO[];
   idProofType?: string | null;
   idProofNumber?: string | null;
 }
@@ -219,4 +234,14 @@ export interface CompanyProfileDTO {
   primaryColor: string | null;
   accentColor: string | null;
   fontFamily: string | null;
+}
+// ── Tenants (Phase 9) ────────────────────────────────────────────────────────────
+
+export interface TenantDTO {
+  id: number;
+  name: string;
+  subdomain: string;
+  plan: string;
+  isActive: boolean;
+  createdAt: string;
 }

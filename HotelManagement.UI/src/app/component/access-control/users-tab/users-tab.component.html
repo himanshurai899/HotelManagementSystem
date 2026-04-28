@@ -1,103 +1,144 @@
 <div class="tab-actions">
   @if (isSuperAdmin()) {
-    <button mat-raised-button color="primary" (click)="showCreate.set(!showCreate())">
+    <button mat-raised-button color="primary" (click)="openCreateDialog()">
       <mat-icon>person_add</mat-icon> New User
     </button>
   }
 </div>
 
-@if (showCreate()) {
-  <mat-card class="create-card">
-    <mat-card-header><mat-card-title>Create User</mat-card-title></mat-card-header>
-    <mat-card-content class="form-grid">
-      <mat-form-field appearance="outline">
-        <mat-label>Username</mat-label>
-        <input matInput [(ngModel)]="newUser.username" />
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Email</mat-label>
-        <input matInput type="email" [(ngModel)]="newUser.email" />
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Phone</mat-label>
-        <input matInput [(ngModel)]="newUser.phoneNumber" />
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Password</mat-label>
-        <input matInput type="password" [(ngModel)]="newUser.password" />
-      </mat-form-field>
-      <mat-form-field appearance="outline">
-        <mat-label>Roles</mat-label>
-        <mat-select [(ngModel)]="newUser.roles" multiple>
-          @for (r of roles(); track r.id) {
-            <mat-option [value]="r.name">{{ r.name }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-    </mat-card-content>
-    <mat-card-actions>
-      <button mat-raised-button color="primary" (click)="createUser()">Create</button>
-      <button mat-button (click)="showCreate.set(false)">Cancel</button>
-    </mat-card-actions>
-  </mat-card>
-}
-
 @if (loading()) { <div class="center"><mat-spinner diameter="40"></mat-spinner></div> }
 
 @if (!loading()) {
-  <mat-card>
-    <mat-accordion>
+  <mat-card class="users-card">
+    <mat-accordion multi>
       @for (u of users(); track u.id) {
-        <mat-expansion-panel>
+        <mat-expansion-panel (opened)="loadUserTenants(u.id)">
+
+          <!-- ── Panel Header ─────────────────────────────────────────── -->
           <mat-expansion-panel-header>
-            <mat-panel-title>
-              <mat-icon class="user-icon">account_circle</mat-icon>
-              <span class="user-name">{{ u.username }}</span>
-            </mat-panel-title>
-            <mat-panel-description>
-              {{ u.email }}
-              @for (r of u.roles; track r) {
-                <mat-chip class="role-chip role-chip--{{ r.toLowerCase() }}">{{ r }}</mat-chip>
+            <mat-panel-title class="panel-title">
+              @if (showPhoto(u)) {
+                <img class="avatar" [src]="resolvePhotoUrl(u.profilePhotoUrl)"
+                     [alt]="u.username" (error)="markPhotoBroken(u.id)" />
+              } @else {
+                <span class="avatar avatar--initials">{{ (u.firstName || u.username).slice(0,1) | uppercase }}{{ (u.lastName || '').slice(0,1) | uppercase }}</span>
               }
+              <div class="user-names">
+                <span class="display-name">{{ u.firstName }} {{ u.lastName }}</span>
+                <span class="username-sub">{{ '@' + u.username }}</span>
+              </div>
+            </mat-panel-title>
+            <mat-panel-description class="panel-desc">
+              <span class="email-text">{{ u.email }}</span>
+              <span class="role-chips">
+                @for (r of u.roles; track r) {
+                  <mat-chip class="role-chip role-chip--{{ r.toLowerCase() }}">{{ r }}</mat-chip>
+                }
+              </span>
             </mat-panel-description>
           </mat-expansion-panel-header>
 
+          <!-- ── Expanded Detail ─────────────────────────────────────── -->
           <div class="user-detail">
-            <p><mat-icon>phone</mat-icon> {{ u.phoneNumber || '—' }}</p>
+
+            <!-- Contact row -->
+            <div class="detail-row">
+              <div class="detail-item">
+                <mat-icon>phone</mat-icon>
+                <span>{{ u.phoneNumber || '—' }}</span>
+              </div>
+              <div class="detail-item">
+                <mat-icon>email</mat-icon>
+                <span>{{ u.email }}</span>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
 
             <!-- Roles -->
-            <div class="section-label">Roles</div>
+            <div class="section-label"><mat-icon>shield</mat-icon> Roles</div>
             <div class="chips-row">
               @for (role of u.roles; track role) {
-                <mat-chip (removed)="removeRole(u.id, role)" [removable]="isSuperAdmin()">
+                <mat-chip (removed)="removeRole(u.id, role)"
+                          class="role-chip role-chip--{{ role.toLowerCase() }}">
                   {{ role }}
                   @if (isSuperAdmin()) {
                     <button matChipRemove><mat-icon>cancel</mat-icon></button>
                   }
                 </mat-chip>
               }
-              @if (isSuperAdmin()) {
-                @for (r of availableRoles(u); track r) {
-                  <button mat-stroked-button class="add-btn" (click)="addRole(u.id, r)">+ {{ r }}</button>
-                }
+              @if (isSuperAdmin() && availableRoles(u).length > 0) {
+                <mat-form-field appearance="outline" class="inline-select">
+                  <mat-label>Add role</mat-label>
+                  <mat-select (selectionChange)="addRole(u.id, $event.value)">
+                    @for (r of availableRoles(u); track r) {
+                      <mat-option [value]="r">{{ r }}</mat-option>
+                    }
+                  </mat-select>
+                </mat-form-field>
               }
             </div>
 
+            <mat-divider></mat-divider>
+
             <!-- Claims -->
-            <div class="section-label">Claims</div>
+            <div class="section-label"><mat-icon>vpn_key</mat-icon> Claims</div>
             <div class="chips-row">
               @for (c of u.claims; track c.type + c.value) {
-                <mat-chip [removable]="isSuperAdmin()"
-                          (removed)="removeClaim(u.id, c.type, c.value)"
-                          [matTooltip]="c.type">
-                  {{ c.value }}
+                <mat-chip (removed)="removeClaim(u.id, c.type, c.value)"
+                          [matTooltip]="c.type + ': ' + c.value">
+                  <mat-icon matChipAvatar>verified</mat-icon>
+                  {{ c.type }} = {{ c.value }}
                   @if (isSuperAdmin()) {
                     <button matChipRemove><mat-icon>cancel</mat-icon></button>
                   }
                 </mat-chip>
               }
+              @if (!u.claims.length) { <span class="empty-hint">No claims assigned</span> }
             </div>
 
+            @if (isSuperAdmin()) {
+              <div class="add-claim-row">
+                <mat-form-field appearance="outline" class="claim-input">
+                  <mat-label>Claim type</mat-label>
+                  <input matInput placeholder="e.g. Permission"
+                         [value]="getAddClaim(u.id).type"
+                         (input)="setAddClaimType(u.id, $any($event.target).value)" />
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="claim-input">
+                  <mat-label>Claim value</mat-label>
+                  <input matInput placeholder="e.g. ManageRooms"
+                         [value]="getAddClaim(u.id).value"
+                         (input)="setAddClaimValue(u.id, $any($event.target).value)" />
+                </mat-form-field>
+                <button mat-stroked-button color="primary" (click)="addClaim(u.id)">
+                  <mat-icon>add</mat-icon> Add Claim
+                </button>
+              </div>
+            }
+
+            <mat-divider></mat-divider>
+
+            <!-- Tenants -->
+            <div class="section-label"><mat-icon>domain</mat-icon> Associated Tenants</div>
+            @if (loadingTenants()[u.id]) {
+              <mat-spinner diameter="24"></mat-spinner>
+            } @else {
+              <div class="chips-row">
+                @for (t of userTenants()[u.id]; track t.tenantId) {
+                  <mat-chip [matTooltip]="'Joined: ' + (t.joinedAt | date:'mediumDate')">
+                    <mat-icon matChipAvatar>business</mat-icon>
+                    {{ t.tenantName }}
+                    @if (t.tenantRole) { <span class="tenant-role">· {{ t.tenantRole }}</span> }
+                  </mat-chip>
+                }
+                @if (!userTenants()[u.id]?.length) {
+                  <span class="empty-hint">Not associated with any tenant</span>
+                }
+              </div>
+            }
+
+            <!-- Delete -->
             @if (isSuperAdmin()) {
               <div class="delete-row">
                 <button mat-stroked-button color="warn" (click)="deleteUser(u.id)">

@@ -78,11 +78,41 @@ All admin pages: `MatTable` list + inline form panel using `MatFormField`, `MatS
 | `BookingsComponent` | `/bookings` | Customer (own), Administrator (all) |
 | `BrowseRoomsComponent` | `/browse-rooms` | Public (no auth required) |
 
+**Booking form date-picker rules (implemented):**
+- Check-in uses `MatDatepicker` with `[min]="today"` — no past dates allowed
+- Check-in is pre-filled to the **next full hour** from now on form open
+- Check-out uses `MatDatepicker` with `[min]="minCheckOutDate()"` (a `signal<Date>`)
+- For **nightly** rooms (`allowHourlyStay = false`): checkout min = day after check-in
+- For **hourly** rooms (`allowHourlyStay = true`): checkout min = same day as check-in
+- `Room.allowHourlyStay` boolean is on `RoomDTO` and `api.models.ts` `RoomDTO` interface
+- When room selection changes, `minCheckOutDate` signal is recalculated reactively
+- `MatNativeDateModule` is imported in `BookingsComponent` alongside `MatDatepickerModule`
+
 ### ✅ Phase 7 — Routing + Unauthorized
 - All routes in `app.routes.ts` — flat, no lazy loading
 - Protected routes use `canActivate: [authGuard, roleGuard]` + `data: { roles: [...] }`
 - `UnauthorizedComponent` at `/unauthorized` — shown when `roleGuard` denies access
 - Fallback `**` → `''` (hub redirect)
+
+### ✅ Phase 9 — Multi-Tenant SaaS
+| File | Purpose |
+|---|---|
+| `Shared/Models/Tenant.cs` | Tenant entity — name, subdomain (unique), plan, active flag, createdAt |
+| `Shared/Models/UserTenant.cs` | Join entity — many-to-many user ↔ tenant; `TenantRole?` for tenant-scoped roles |
+| `Shared/Enums/TenantPlan.cs` | `Free`, `Pro`, `Enterprise` |
+| `Shared/DTOs/TenantDTO.cs` | Flat DTO |
+| `Shared/DTOs/UserTenantDTO.cs` | Flat DTO — `string UserName`, `string TenantName` (denormalized) |
+| `API/Middleware/TenantResolverMiddleware.cs` | Reads `TenantId` from JWT claim → falls back to `X-Tenant-Id` header; sets `HttpContext.Items["TenantId"]` |
+| `API/Controllers/TenantsController.cs` | CRUD + user-assignment endpoints; `[Authorize(Roles = "SuperAdmin")]` |
+| `component/tenants/tenants.component.ts` | Angular CRUD page + expand-to-see-users panel; route `/tenants`, `data: { roles: ['SuperAdmin'] }` |
+
+**Multi-Tenant extras in other files:**
+- `TenantId` FK added to: `Room`, `Booking`, `Staff`, `RoomType`, `Amenity`, `Invoice`
+- `AccountController.Login` includes `TenantId` claim (primary tenant from `UserTenant` table)
+- `ManageTenants` policy registered in `Program.cs`
+- `SuperAdmin` role (Id = 4) seeded with all permission claims
+
+**⚠️ Known gap:** `GetAll()` in tenanted controllers does not yet filter by `TenantId` — `Administrator` sees cross-tenant data. Apply TenantId filter before returning lists in: `RoomsController`, `BookingsController`, `StaffController`, `RoomTypesController`, `AmenitiesController`, `InvoicesController`.
 
 ---
 
@@ -154,15 +184,17 @@ All admin pages: `MatTable` list + inline form panel using `MatFormField`, `MatS
 **Seeded Roles & Claims:**
 | Id | Role | Permission Claims |
 |---|---|---|
-| 1 | Administrator | ManageUsers, ManageRoles, ManageRooms |
+| 1 | Administrator | ManageUsers, ManageRoles, ManageRooms, ManageRoomTypes, ManageAmenities, ManageStaff, ManageBookings, ViewReports |
 | 2 | Guest | ViewDashboard |
 | 3 | Customer | MakeBooking |
+| 4 | SuperAdmin | All permissions including ManageTenants |
 
 **Seeded Users:**
 | Username | Email | Role |
 |---|---|---|
 | `admin` | admin@example.com | Administrator |
 | `guest` | guest@example.com | Guest |
+| `superadmin` | superadmin@example.com | SuperAdmin |
 
 New registrations always get: role `Customer` + claim `Department:Sales`.
 
@@ -286,6 +318,13 @@ New registrations always get: role `Customer` + claim `Department:Sales`.
 | `ManageRooms` | `Permission = "ManageRooms"` |
 | `ManageRoles` | `Permission = "ManageRoles"` |
 | `ManageUsers` | `Permission = "ManageUsers"` |
+| `ManagePermissions` | `Permission = "ManagePermissions"` |
+| `ManageRoomTypes` | `Permission = "ManageRoomTypes"` |
+| `ManageAmenities` | `Permission = "ManageAmenities"` |
+| `ManageStaff` | `Permission = "ManageStaff"` |
+| `ManageBookings` | `Permission = "ManageBookings"` |
+| `ManageTenants` | `Permission = "ManageTenants"` |
+| `ViewReports` | `Permission = "ViewReports"` |
 
 ---
 
@@ -341,6 +380,8 @@ These rules are derived from `3-architectural-domains.json` and must be respecte
 - ✅ Routes are added to `app.routes.ts` — no separate routing modules
 - ✅ State managed with `signal()` — do not introduce NgRx or other state libraries
 - ✅ `AuthService` is the single source of truth for auth state — do not duplicate token logic
+- ✅ Date fields in forms use `MatDatepicker` + `MatNativeDateModule` — never plain `<input type="date">`
+- ✅ Booking check-in defaults to next full hour; check-out min is driven by `Room.allowHourlyStay` signal
 
 ### Shared Library
 - ✅ Models, DTOs, enums, interfaces, repositories, and DbContext all live in `HotelManagementSystem.Shared`

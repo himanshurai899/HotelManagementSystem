@@ -3,6 +3,7 @@ using HotelManagementSystem.Shared.DTOs;
 using HotelManagementSystem.Shared.Interfaces;
 using HotelManagementSystem.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HotelManagementSystem.API.Controllers
@@ -13,10 +14,12 @@ namespace HotelManagementSystem.API.Controllers
     public class TenantsController(
         IRepository<Tenant> repo,
         IRepository<UserTenant> userTenantRepo,
+        UserManager<User> userManager,
         IMapper mapper) : ControllerBase
     {
         private readonly IRepository<Tenant> _repo = repo;
         private readonly IRepository<UserTenant> _userTenantRepo = userTenantRepo;
+        private readonly UserManager<User> _userManager = userManager;
         private readonly IMapper _mapper = mapper;
 
         // GET /api/tenants
@@ -75,7 +78,14 @@ namespace HotelManagementSystem.API.Controllers
             if (tenant == null) return NotFound();
 
             var all = await _userTenantRepo.GetAllAsync();
-            var forTenant = all.Where(ut => ut.TenantId == id);
+            var forTenant = all.Where(ut => ut.TenantId == id).ToList();
+
+            // Hydrate User navigation so AutoMapper can resolve FirstName / LastName / Email
+            foreach (var ut in forTenant)
+            {
+                ut.User = await _userManager.FindByIdAsync(ut.UserId.ToString()) ?? new User();
+            }
+
             return Ok(_mapper.Map<IEnumerable<UserTenantDTO>>(forTenant));
         }
 
@@ -90,9 +100,15 @@ namespace HotelManagementSystem.API.Controllers
             if (all.Any(ut => ut.TenantId == id && ut.UserId == dto.UserId))
                 return BadRequest(new { message = "User is already a member of this tenant." });
 
-            var entity = _mapper.Map<UserTenant>(dto);
-            entity.TenantId = id;
-            entity.JoinedAt = DateTime.UtcNow;
+            // Build the entity directly — do NOT use AutoMapper ReverseMap here because
+            // mapping UserName back would cause EF to try to resolve/insert the User navigation.
+            var entity = new UserTenant
+            {
+                UserId    = dto.UserId,
+                TenantId  = id,
+                TenantRole = dto.TenantRole,
+                JoinedAt  = DateTime.UtcNow
+            };
             await _userTenantRepo.AddAsync(entity);
             return CreatedAtAction(nameof(GetUsersInTenant), new { id }, _mapper.Map<UserTenantDTO>(entity));
         }

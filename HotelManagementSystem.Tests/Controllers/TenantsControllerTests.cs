@@ -7,6 +7,7 @@ using HotelManagementSystem.Shared.Interfaces;
 using HotelManagementSystem.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -16,6 +17,12 @@ namespace HotelManagementSystem.Tests.Controllers
     public class TenantsControllerTests
     {
         // ---------- helpers ----------
+
+        private static Mock<UserManager<User>> BuildUserManagerMock()
+        {
+            var store = new Mock<IUserStore<User>>();
+            return new Mock<UserManager<User>>(store.Object, null!, null!, null!, null!, null!, null!, null!, null!);
+        }
 
         private static TenantsController BuildController(
             Mock<IRepository<Tenant>> repo,
@@ -33,7 +40,7 @@ namespace HotelManagementSystem.Tests.Controllers
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var user = new ClaimsPrincipal(identity);
 
-            var controller = new TenantsController(repo.Object, userTenantRepo.Object, mapper.Object)
+            var controller = new TenantsController(repo.Object, userTenantRepo.Object, BuildUserManagerMock().Object, mapper.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -164,7 +171,7 @@ namespace HotelManagementSystem.Tests.Controllers
             var utRepo = new Mock<IRepository<UserTenant>>();
             var mapper = new Mock<IMapper>();
 
-            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant?)null);
+            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant)null!);
 
             var sut = BuildController(repo, utRepo, mapper, userId: 3, "SuperAdmin");
             var result = await sut.GetById(99);
@@ -228,7 +235,7 @@ namespace HotelManagementSystem.Tests.Controllers
             var utRepo = new Mock<IRepository<UserTenant>>();
             var mapper = new Mock<IMapper>();
 
-            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant?)null);
+            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant)null!);
 
             var sut = BuildController(repo, utRepo, mapper, userId: 3, "SuperAdmin");
             var result = await sut.Update(99, new TenantDTO());
@@ -264,7 +271,7 @@ namespace HotelManagementSystem.Tests.Controllers
             var utRepo = new Mock<IRepository<UserTenant>>();
             var mapper = new Mock<IMapper>();
 
-            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant?)null);
+            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant)null!);
 
             var sut = BuildController(repo, utRepo, mapper, userId: 3, "SuperAdmin");
             var result = await sut.Delete(99);
@@ -310,7 +317,7 @@ namespace HotelManagementSystem.Tests.Controllers
             var utRepo = new Mock<IRepository<UserTenant>>();
             var mapper = new Mock<IMapper>();
 
-            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant?)null);
+            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant)null!);
 
             var sut = BuildController(repo, utRepo, mapper, userId: 3, "SuperAdmin");
             var result = await sut.GetUsersInTenant(99);
@@ -353,7 +360,7 @@ namespace HotelManagementSystem.Tests.Controllers
             var utRepo = new Mock<IRepository<UserTenant>>();
             var mapper = new Mock<IMapper>();
 
-            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant?)null);
+            repo.Setup(r => r.GetByIdAsync(99)).ReturnsAsync((Tenant)null!);
 
             var sut = BuildController(repo, utRepo, mapper, userId: 3, "SuperAdmin");
             var result = await sut.AddUserToTenant(99, new UserTenantDTO());

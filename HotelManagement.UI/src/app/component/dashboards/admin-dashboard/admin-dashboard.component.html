@@ -65,6 +65,13 @@
         <strong>All Bookings</strong>
         <span>Review reservations</span>
       </a>
+      @if (isSuperAdmin()) {
+        <a class="action-tile" routerLink="/tenants">
+          <mat-icon style="color:#7b1fa2">domain</mat-icon>
+          <strong>Manage Tenants</strong>
+          <span>Companies &amp; subscriptions</span>
+        </a>
+      }
     </div>
   </section>
 }

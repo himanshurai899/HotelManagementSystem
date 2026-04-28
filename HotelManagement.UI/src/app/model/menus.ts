@@ -111,6 +111,14 @@ export const menus: Menu[] = [
         icon: 'business'
     },
     {
+        route: 'tenants',
+        title: 'Tenants',
+        description: 'Manage companies & subscriptions',
+        category: 'Management',
+        requiredRoles: ['SuperAdmin'],
+        icon: 'domain'
+    },
+    {
         route: 'profile',
         title: 'My Profile',
         description: 'View and edit your profile',
@@ -127,5 +135,6 @@ export const categoryMeta: Record<string, { icon: string }> = {
     'People':       { icon: 'groups' },
     'Reservations': { icon: 'event_available' },
     'Billing':      { icon: 'account_balance_wallet' },
+    'Management':   { icon: 'domain' },
     'Account':      { icon: 'manage_accounts' },
 };

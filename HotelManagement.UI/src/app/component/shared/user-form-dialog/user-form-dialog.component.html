@@ -1,0 +1,183 @@
+<h2 mat-dialog-title>
+  <mat-icon class="dialog-icon">person_add</mat-icon>
+  Create New User
+</h2>
+
+<mat-dialog-content>
+  @if (loading()) {
+    <div class="loading-wrap"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else {
+    <form [formGroup]="form" class="form-body">
+
+      <!-- ── Identity ─────────────────────────────────────────────────── -->
+      <div class="section-label">
+        <mat-icon>badge</mat-icon> Identity
+      </div>
+      <div class="row-2">
+        <mat-form-field appearance="outline">
+          <mat-label>First Name</mat-label>
+          <input matInput formControlName="firstName" placeholder="John" />
+          @if (form.get('firstName')?.hasError('required') && form.get('firstName')?.touched) {
+            <mat-error>First name is required</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Last Name</mat-label>
+          <input matInput formControlName="lastName" placeholder="Doe" />
+          @if (form.get('lastName')?.hasError('required') && form.get('lastName')?.touched) {
+            <mat-error>Last name is required</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Username</mat-label>
+        <mat-icon matPrefix>alternate_email</mat-icon>
+        <input matInput formControlName="username" placeholder="johndoe" />
+        @if (form.get('username')?.hasError('required') && form.get('username')?.touched) {
+          <mat-error>Username is required</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- ── Contact ───────────────────────────────────────────────────── -->
+      <div class="section-label">
+        <mat-icon>contact_mail</mat-icon> Contact
+      </div>
+      <div class="row-2">
+        <mat-form-field appearance="outline">
+          <mat-label>Email</mat-label>
+          <mat-icon matPrefix>email</mat-icon>
+          <input matInput type="email" formControlName="email" placeholder="john@example.com" />
+          @if (form.get('email')?.hasError('required') && form.get('email')?.touched) {
+            <mat-error>Email is required</mat-error>
+          }
+          @if (form.get('email')?.hasError('email') && form.get('email')?.touched) {
+            <mat-error>Enter a valid email address</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Phone Number</mat-label>
+          <mat-icon matPrefix>phone</mat-icon>
+          <input matInput formControlName="phoneNumber" placeholder="+1 555 0100" />
+          @if (form.get('phoneNumber')?.hasError('required') && form.get('phoneNumber')?.touched) {
+            <mat-error>Phone number is required</mat-error>
+          }
+        </mat-form-field>
+      </div>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- ── Security ───────────────────────────────────────────────────── -->
+      <div class="section-label">
+        <mat-icon>lock</mat-icon> Security
+      </div>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Password</mat-label>
+        <mat-icon matPrefix>key</mat-icon>
+        <input matInput [type]="showPassword() ? 'text' : 'password'" formControlName="password" />
+        <button mat-icon-button matSuffix type="button" (click)="showPassword.set(!showPassword())"
+                [matTooltip]="showPassword() ? 'Hide password' : 'Show password'">
+          <mat-icon>{{ showPassword() ? 'visibility_off' : 'visibility' }}</mat-icon>
+        </button>
+        @if (form.get('password')?.hasError('required') && form.get('password')?.touched) {
+          <mat-error>Password is required</mat-error>
+        }
+        @if (form.get('password')?.hasError('minlength') && form.get('password')?.touched) {
+          <mat-error>Minimum 8 characters</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- ── Roles & Tenants ─────────────────────────────────────────── -->
+      <div class="section-label">
+        <mat-icon>admin_panel_settings</mat-icon> Roles &amp; Access
+      </div>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Assign Roles</mat-label>
+        <mat-icon matPrefix>shield</mat-icon>
+        <mat-select formControlName="roles" multiple>
+          @for (r of roles(); track r.id) {
+            <mat-option [value]="r.name">{{ r.name }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>Defaults to Customer if none selected</mat-hint>
+      </mat-form-field>
+
+      <mat-divider class="divider"></mat-divider>
+
+      <!-- ── Claims (mandatory) ──────────────────────────────────────── -->
+      <div class="section-label">
+        <mat-icon>vpn_key</mat-icon> Claims
+        <span class="required-hint">* at least one required</span>
+      </div>
+
+      <!-- Added claims chips -->
+      @if (claims().length > 0) {
+        <div class="claims-chips">
+          @for (c of claims(); track $index) {
+            <mat-chip (removed)="removeClaim($index)">
+              <mat-icon matChipAvatar>verified</mat-icon>
+              {{ c.type }} = {{ c.value }}
+              <button matChipRemove><mat-icon>cancel</mat-icon></button>
+            </mat-chip>
+          }
+        </div>
+      } @else {
+        <p class="no-claims-hint">No claims added yet — add at least one below.</p>
+      }
+
+      <!-- Add claim row -->
+      <div class="claim-add-row">
+        <mat-form-field appearance="outline" class="claim-field">
+          <mat-label>Claim type</mat-label>
+          <input matInput placeholder="e.g. Department"
+                 [value]="pendingClaim().type"
+                 (input)="setPendingType($any($event.target).value)" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="claim-field">
+          <mat-label>Claim value</mat-label>
+          <input matInput placeholder="e.g. Sales"
+                 [value]="pendingClaim().value"
+                 (input)="setPendingValue($any($event.target).value)"
+                 (keyup.enter)="addClaim()" />
+        </mat-form-field>
+        <button mat-stroked-button color="primary" type="button" (click)="addClaim()">
+          <mat-icon>add</mat-icon> Add
+        </button>
+      </div>
+
+      @if (auth.isSuperAdmin() && tenants().length > 0) {
+        <mat-form-field appearance="outline" class="full">
+          <mat-label>Associate with Tenant(s)</mat-label>
+          <mat-icon matPrefix>domain</mat-icon>
+          <mat-select formControlName="tenantIds" multiple>
+            @for (t of tenants(); track t.id) {
+              <mat-option [value]="t.id">
+                <span class="tenant-option">
+                  <strong>{{ t.name }}</strong>
+                  <span class="tenant-sub">{{ t.subdomain }} · {{ t.plan }}</span>
+                </span>
+              </mat-option>
+            }
+          </mat-select>
+          <mat-hint>User will be added as a member of selected tenants</mat-hint>
+        </mat-form-field>
+      }
+
+    </form>
+  }
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary"
+          [disabled]="form.invalid || loading()"
+          (click)="submit()">
+    <mat-icon>person_add</mat-icon> Create User
+  </button>
+</mat-dialog-actions>

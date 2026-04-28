@@ -1,4 +1,5 @@
 using HotelManagementSystem.Shared.DTOs;
+using HotelManagementSystem.Shared.Interfaces;
 using HotelManagementSystem.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,10 +11,14 @@ namespace HotelManagementSystem.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     [Authorize(Roles = "Administrator,SuperAdmin", Policy = "ManageUsers")]
-    public class UsersController(UserManager<User> userManager, RoleManager<Role> roleManager) : ControllerBase
+    public class UsersController(
+        UserManager<User> userManager,
+        RoleManager<Role> roleManager,
+        IRepository<UserTenant> userTenantRepo) : ControllerBase
     {
         private readonly UserManager<User> _userManager = userManager;
         private readonly RoleManager<Role> _roleManager = roleManager;
+        private readonly IRepository<UserTenant> _userTenantRepo = userTenantRepo;
 
         // ── GET /api/users ─────────────────────────────────────────────────────
         [HttpGet]
@@ -107,8 +112,15 @@ namespace HotelManagementSystem.API.Controllers
             if (!model.Roles.Any())
             {
                 await _userManager.AddToRoleAsync(user, "Customer");
-                await _userManager.AddClaimAsync(user, new Claim("Department", "Sales"));
             }
+
+            // Save claims supplied by the caller (at least one is required — validated client-side)
+            foreach (var c in model.Claims)
+            {
+                if (!string.IsNullOrWhiteSpace(c.Type) && !string.IsNullOrWhiteSpace(c.Value))
+                    await _userManager.AddClaimAsync(user, new Claim(c.Type.Trim(), c.Value.Trim()));
+            }
+
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, new { user.Id, user.UserName, user.Email });
         }
 
@@ -186,6 +198,29 @@ namespace HotelManagementSystem.API.Controllers
             if (user is null) return NotFound();
             var result = await _userManager.AddClaimAsync(user, new Claim(dto.Type, dto.Value));
             return result.Succeeded ? NoContent() : BadRequest(result.Errors);
+        }
+
+        // ── GET /api/users/{id}/tenants ────────────────────────────────────────
+        [HttpGet("{id}/tenants")]
+        public async Task<IActionResult> GetUserTenants(int id)
+        {
+            var user = await _userManager.FindByIdAsync(id.ToString());
+            if (user is null) return NotFound();
+
+            var all = await _userTenantRepo.GetAllAsync();
+            var memberships = all
+                .Where(ut => ut.UserId == id)
+                .Select(ut => new UserTenantDTO
+                {
+                    UserId     = ut.UserId,
+                    UserName   = user.UserName ?? string.Empty,
+                    TenantId   = ut.TenantId,
+                    TenantRole = ut.TenantRole,
+                    JoinedAt   = ut.JoinedAt
+                })
+                .ToList();
+
+            return Ok(memberships);
         }
 
         // ── DELETE /api/users/{id}/claims/{type}/{value} ───────────────────────
