@@ -27,6 +27,85 @@
 
 ---
 
+## Execution Strategy — Sequential vs Parallel
+
+### 🔒 Essential Sequential Foundation
+These phases are hard dependencies for most downstream work. They **must** complete in order before the parallel tracks begin.
+
+```
+Phase 8 ✅  →  Phase 9 ✅  →  Phase 12 🔄  ← complete this first
+(Billing)     (Multi-Tenant)   (Adv. Booking)
+```
+
+| Phase | Blocks | Why sequential |
+|---|---|---|
+| 8 — Billing & Payments | 13, 19, 20 | Invoice + Payment entities are referenced by cancellation fees, email triggers, and key generation |
+| 9 — Multi-Tenant SaaS | 14, 15 | `TenantId` FK must exist on all entities before hotel ownership and per-tenant KPIs make sense |
+| 12 — Advanced Booking | 13, 16, 17, 18, 19 | `BookingRoom`, `BookingType`, room-block, approve/reject — all downstream features query or extend this shape |
+
+---
+
+### 🔀 Parallel Tracks (after Phase 12 completes)
+
+Once the sequential foundation is complete, work can fan out across **four independent tracks** simultaneously.
+
+#### Track A — Customer Experience
+```
+Phase 12 ──► Phase 13 (Customer UX & Security)
+         └──► Phase 16 (Room Content & Media)
+         └──► Phase 18 (Reviews & Bulk Ops)
+```
+These share no write dependencies on each other. Teams can work on digital keys (13), room photos/descriptions (16), and reviews/bulk updates (18) at the same time.
+
+#### Track B — Business Rules
+```
+Phase 12 ──► Phase 17 (Pricing Engine)
+Phase 17 ──► Phase 19 (Cancellation Rules)   ← 19 depends on 17
+```
+Pricing engine must land before cancellation tiers (which reuse `PricingEngine` for fee calculation). **17 → 19 are sequential within this track.**
+
+#### Track C — Ops & Admin Tooling
+```
+Phase 9 ──► Phase 14 (Multi-Hotel Ownership)
+Phase 12 ──► Phase 10 (Import / Export)       ← entity shapes must be stable
+Phase 11 (UX Enhancements) ── mostly independent; 11c (Reports) needs Phase 14 data
+```
+Phase 10 and Phase 11 (11a Notifications, 11b Maintenance Requests) are broadly independent and can run alongside Track A/B once Phase 12 is done. Phase 11c (Reports) needs Phase 14 to include per-hotel occupancy.
+
+#### Track D — Analytics
+```
+Phase 11c ──► Phase 15 (KPI Dashboard)
+Phase 14  ──► Phase 15
+```
+Phase 15 is a pure consumer of data produced by 11c (report endpoints) and 14 (hotel entities). Start only after both are complete.
+
+#### Track E — Notifications (capping layer)
+```
+Phase 8 + Phase 13 + Phase 19 ──► Phase 20 (Email Notifications)
+```
+Phase 20 wraps all lifecycle events from earlier phases. It is the last phase to implement.
+
+---
+
+### Recommended Sprint Ordering
+
+```
+Sprint 1  │ Complete Phase 12 (sub-phases 12a → 12d)
+          │
+Sprint 2  │ Track A: Phase 16          Track B: Phase 17
+          │ Track C: Phase 10 + 11a/b  Track D: Phase 14
+          │
+Sprint 3  │ Track A: Phase 13 + 18     Track B: Phase 19
+          │ Track C: Phase 11c         (unblocks Track D)
+          │
+Sprint 4  │ Track D: Phase 15
+          │ Track E: Phase 20
+```
+
+> **Parallel rule of thumb:** Any two phases in different tracks with no shared arrow in the diagrams above can be worked on simultaneously without merge conflicts on the data model.
+
+---
+
 ## Phase 8 — Billing & Payments
 
 ### Overview

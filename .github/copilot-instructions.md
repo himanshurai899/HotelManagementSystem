@@ -695,3 +695,161 @@ Key decisions recorded there:
 - **Tenant isolation:** row-level (`TenantId` FK on every tenanted entity)
 - **Charts:** `ng2-charts` (Chart.js) approved exclusively for `ReportsComponent`
 - **PDF invoices:** server-side via `QuestPDF` in `Shared/Utilities/InvoicePdfUtility.cs`
+
+---
+
+## Azure Deployment — Multi-Tenant SaaS
+
+> This section documents the production deployment path for the Hotel Management System on Azure, including TDD-agent orchestrated CI/CD and multi-tenant-specific considerations.
+
+---
+
+### Azure Infrastructure
+
+| Resource | Purpose | Recommended Tier |
+|---|---|---|
+| **Azure App Service** | Host `HotelManagementSystem.API` | P1v3 min (autoscale enabled) |
+| **Azure Static Web Apps** | Host `HotelManagement.UI` (Angular SPA) | Standard |
+| **Azure SQL Database** | Single DB with row-level `TenantId` isolation | General Purpose / Elastic Pool |
+| **Azure Blob Storage** | `AzureBlobStorageService.cs` — file uploads, PDFs, photos | LRS |
+| **Azure Key Vault** | JWT secrets, DB connection strings, SMTP credentials | Standard |
+| **Azure API Management (APIM)** | Per-tenant subdomain routing, rate limiting | Developer / Standard |
+| **Azure CDN** | Static asset delivery for Angular SPA | Standard Microsoft |
+| **Azure Application Insights** | APM, request tracing, exception tracking | — |
+
+---
+
+### Environment Tiers
+
+```
+DEV (local)   → SQL LocalDB  |  localhost:7204  |  localhost:4200
+STAGING       → Azure App Service staging slot  |  Azure SQL (dev tier)
+PRODUCTION    → Azure App Service prod slot  |  Azure SQL (General Purpose)  |  APIM
+```
+
+**Slot Swap Strategy (zero downtime):**
+```
+staging slot (warm-up) → health check passes → swap → production
+                                                     ↑
+                                           old prod becomes staging (instant rollback)
+```
+
+---
+
+### Multi-Tenant Subdomain Routing
+
+`TenantResolverMiddleware` already supports the `X-Tenant-Id` header. Wire APIM to inject it from the subdomain:
+
+```
+tenant1.yourdomain.com → APIM → API App Service (X-Tenant-Id: 1)
+tenant2.yourdomain.com → APIM → API App Service (X-Tenant-Id: 2)
+```
+
+- Create a wildcard DNS record: `*.yourdomain.com` → APIM gateway
+- APIM inbound policy extracts the subdomain and injects `X-Tenant-Id` header before forwarding
+
+**CORS must be updated for wildcard subdomains** (`Program.cs` currently hardcodes `http://localhost:4200`):
+
+```csharp
+policy.WithOrigins(
+    "http://localhost:4200",
+    "https://*.yourdomain.com"   // wildcard subdomain support
+)
+.AllowAnyHeader()
+.AllowAnyMethod();
+```
+
+---
+
+### Secrets & Configuration
+
+All sensitive values must be stored in **Azure Key Vault** — never in `appsettings.json` in production:
+
+| Secret Name | Maps To |
+|---|---|
+| `JwtSettings--SecretKey` | `IConfiguration["JwtSettings:SecretKey"]` |
+| `JwtSettings--Issuer` | `IConfiguration["JwtSettings:Issuer"]` |
+| `ConnectionStrings--Default` | EF Core connection string |
+| `EmailSettings--Password` | SMTP credential (Phase 20) |
+
+- Enable **Managed Identity** on App Service — no credentials in code or environment variables
+- Reference secrets in `appsettings.json` using: `@Microsoft.KeyVault(VaultName=...;SecretName=...)`
+
+---
+
+### EF Core Migrations in CI/CD
+
+- Run `dotnet ef database update` as a **pre-deploy step** in the pipeline — never on app startup
+- Migrations live in `Shared/Migrations/` and must be applied before the new API version goes live
+- Use Azure SQL Elastic Pool for cost efficiency when serving many tenants from one database
+
+---
+
+### TDD-Agent Orchestrator CI/CD Pipeline
+
+The pipeline enforces a TDD-first agentic SDLC loop:
+
+```
+Test Generation Agent  →  writes xUnit + .spec.ts tests FIRST
+        ↓
+Implementation Agent   →  generates code to pass tests
+        ↓
+Architecture Review Agent  →  validates against copilot-instructions.md rules
+        ↓
+PR Agent               →  opens PR with tests + implementation together
+        ↓
+GitHub Actions         →  build → test → coverage gate → staging deploy → slot swap
+```
+
+**GitHub Actions pipeline key steps:**
+
+1. `dotnet build` — compile all projects
+2. `dotnet test HotelManagementSystem.Tests` with `--collect:"XPlat Code Coverage"` — **fail if coverage < 80%**
+3. `npm ci && npm run test -- --watch=false --code-coverage` in `HotelManagement.UI/`
+4. `dotnet ef database update` against staging SQL
+5. `azure/webapps-deploy` → App Service staging slot
+6. `Azure/static-web-apps-deploy` → Angular SPA
+7. Health check → slot swap to production
+
+---
+
+### Multi-Tenant Deployment Checklist
+
+#### Before First Deploy
+- [ ] **Fix `GetAll()` TenantId leak** — all tenanted controllers (`RoomsController`, `BookingsController`, `StaffController`, `RoomTypesController`, `AmenitiesController`, `InvoicesController`) must filter by `TenantId` from `HttpContext.Items["TenantId"]`; `SuperAdmin` bypasses this filter
+- [ ] Blob Storage paths must be tenant-prefixed: `tenant-{id}/uploads/`, `tenant-{id}/invoices/`
+- [ ] JWT `SecretKey`, DB connection string moved to Key Vault
+- [ ] Managed Identity enabled on App Service
+- [ ] Wildcard DNS + APIM subdomain policy configured
+- [ ] CORS updated to allow `*.yourdomain.com`
+- [ ] EF Core migration runs as a pre-deploy step (not on startup)
+
+#### Security
+- [ ] `SuperAdmin` is the **only** role that bypasses tenant filtering
+- [ ] No cross-tenant data exposed from any `GetAll()` endpoint for `Administrator` role
+- [ ] All file upload paths sanitized (use `FileStorageUtility.SanitizeName` — Phase 13c)
+- [ ] JWT expiry is 30 minutes; no long-lived tokens in production
+
+#### Observability
+- [ ] Azure Application Insights SDK added to `HotelManagementSystem.API.csproj`
+- [ ] `TenantId` emitted as a custom dimension on every log entry:
+  ```csharp
+  _logger.LogInformation("Action {Action} for tenant {TenantId}", nameof(GetAll), HttpContext.Items["TenantId"]);
+  ```
+- [ ] Autoscale rules configured: scale out at CPU > 70% for 5 min; min 2 instances for HA
+
+#### Tenant Onboarding Flow
+```
+SuperAdmin creates Tenant via POST /api/tenants
+        ↓
+Seed TenantId in UserTenant for the tenant's admin user
+        ↓
+Subdomain auto-routes via APIM wildcard policy
+        ↓
+JWT on login includes TenantId claim → TenantResolverMiddleware resolves context
+```
+
+#### Plan-Based Feature Gating (`TenantPlan` enum: `Free`, `Pro`, `Enterprise`)
+- Enforce plan limits at the API controller level before executing expensive operations
+- Example: block bulk export for `Free` plan tenants with `403 Forbidden`
+- `TenantDTO.CurrencyCode` (ISO 4217) and `TenantDTO.Locale` (IETF tag) are already implemented for per-tenant localization
