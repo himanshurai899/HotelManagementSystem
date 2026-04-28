@@ -1,3 +1,12 @@
+<!-- Active-tenant scope banner — shown below the toolbar when a tenant is selected -->
+@if (activeTenantId()) {
+  <div class="tenant-banner">
+    <mat-icon>domain</mat-icon>
+    Scoped to <strong>{{ activeTenantName() }}</strong> &mdash; all API calls are filtered to this tenant.
+    <button mat-button (click)="clearTenant()"><mat-icon>close</mat-icon> Clear</button>
+  </div>
+}
+
 <!-- Session expiry prompt -->
 @if (auth.showRefreshPrompt()) {
   <div class="refresh-banner">
@@ -22,6 +31,22 @@
     </div>
 
     <div class="nav-end">
+
+      <!-- SuperAdmin inline tenant selector -->
+      @if (isSuperAdmin()) {
+        <mat-form-field class="tenant-switcher" appearance="outlined"
+                        [matTooltip]="activeTenantId() ? 'Currently scoped to: ' + activeTenantName() : 'Select a tenant to scope all API calls'">
+          <mat-label><mat-icon class="label-icon">domain</mat-icon> Tenant</mat-label>
+          <mat-select [value]="activeTenantId()"
+                      (selectionChange)="selectTenant($event.value)">
+            <mat-option [value]="null">&#8212; All Tenants</mat-option>
+            @for (t of tenants(); track t.id) {
+              <mat-option [value]="t.id">{{ t.name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      }
+
       @if (auth.isLoggedIn()) {
         <button mat-button [matMenuTriggerFor]="userMenu" class="user-btn">
           @if (profilePhotoUrl()) {
@@ -29,14 +54,24 @@
           } @else {
             <span class="nav-avatar-initials">{{ avatarInitials() }}</span>
           }
-          {{ username() }}
+          <span class="user-btn-label">
+            <span class="user-btn-name">{{ username() }}</span>
+            @if (userRole()) {
+              <span class="user-btn-role">{{ userRole() }}</span>
+            }
+          </span>
+          <mat-icon>arrow_drop_down</mat-icon>
         </button>
         <mat-menu #userMenu>
-          <a mat-menu-item routerLink="/profile">
-            <mat-icon>manage_accounts</mat-icon> My Profile
-          </a>
+          <!-- Dynamic settings items — configured via userDropdownSettings array -->
+          @for (item of settingsItems; track item.label) {
+            <button mat-menu-item (click)="handleSettingsItem(item)">
+              <mat-icon>{{ item.icon }}</mat-icon> {{ item.label }}
+            </button>
+          }
+          <mat-divider></mat-divider>
           <button mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon> Logout
+            <mat-icon>logout</mat-icon> Sign Out
           </button>
         </mat-menu>
       } @else {
@@ -46,3 +81,4 @@
     </div>
   </mat-toolbar-row>
 </mat-toolbar>
+

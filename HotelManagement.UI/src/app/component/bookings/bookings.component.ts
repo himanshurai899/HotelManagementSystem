@@ -13,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { TenantCurrencyService } from '../../services/tenant-currency.service';
@@ -25,7 +26,7 @@ import { BookingDTO, RoomDTO, BOOKING_STATUS_LABELS } from '../../model/api.mode
     ReactiveFormsModule, DatePipe, CurrencyPipe, MatTableModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatChipsModule, MatProgressSpinnerModule, MatSnackBarModule,
-    MatDatepickerModule, MatNativeDateModule
+    MatDatepickerModule, MatNativeDateModule, MatTooltipModule
   ],
   templateUrl: './bookings.component.html',
   styleUrl: './bookings.component.scss'
@@ -56,6 +57,9 @@ export class BookingsComponent implements OnInit {
     ? ['roomNumber', 'customer', 'checkIn', 'checkOut', 'total', 'status', 'actions']
     : ['roomNumber', 'checkIn', 'checkOut', 'total', 'status', 'actions'];
 
+  /** Non-null when the chosen room+dates overlap an existing Pending/Confirmed booking */
+  dateConflictMessage = signal<string | null>(null);
+
   /** Minimum selectable check-in date — today (no past dates) */
   readonly minCheckInDate = new Date();
 
@@ -84,6 +88,7 @@ export class BookingsComponent implements OnInit {
     // When room selection changes, recompute checkout min date
     this.form.get('roomId')!.valueChanges.subscribe(roomId => {
       this._updateCheckOutMin(roomId ?? 0);
+      this._checkDateConflict();
     });
 
     // When check-in changes, push checkout min forward accordingly
@@ -95,6 +100,12 @@ export class BookingsComponent implements OnInit {
       if (currentOut && currentOut < this.minCheckOutDate()) {
         this.form.patchValue({ checkOutDate: null });
       }
+      this._checkDateConflict();
+    });
+
+    // Recheck conflict whenever checkout date changes
+    this.form.get('checkOutDate')!.valueChanges.subscribe(() => {
+      this._checkDateConflict();
     });
   }
 
@@ -141,11 +152,49 @@ export class BookingsComponent implements OnInit {
     return this.rooms().find(r => r.id === roomId)?.allowHourlyStay ?? false;
   }
 
+  /** Checks the current form room+dates against existing Pending/Confirmed bookings. */
+  private _checkDateConflict(): void {
+    const roomId   = this.form.get('roomId')!.value ?? 0;
+    const checkIn  = this.form.get('checkInDate')!.value  as Date | null;
+    const checkOut = this.form.get('checkOutDate')!.value as Date | null;
+
+    if (!roomId || !checkIn || !checkOut) {
+      this.dateConflictMessage.set(null);
+      return;
+    }
+
+    const cin  = new Date(checkIn);  cin.setHours(0, 0, 0, 0);
+    const cout = new Date(checkOut); cout.setHours(23, 59, 59, 999);
+
+    const conflict = this.bookings().find(b =>
+      b.roomId === roomId &&
+      (b.status === 0 || b.status === 1) &&   // Pending or Confirmed
+      new Date(b.checkInDate) < cout &&
+      new Date(b.checkOutDate) > cin
+    );
+
+    if (conflict) {
+      const room     = this.rooms().find(r => r.id === roomId);
+      const label    = room ? `Room ${room.roomNumber}` : 'This room';
+      const inLabel  = new Date(conflict.checkInDate).toLocaleDateString();
+      const outLabel = new Date(conflict.checkOutDate).toLocaleDateString();
+      const status   = this.statusLabels[conflict.status]?.toLowerCase() ?? 'booked';
+      this.dateConflictMessage.set(
+        `${label} is already ${status} from ${inLabel} to ${outLabel}. Please choose different dates or another room.`
+      );
+    } else {
+      this.dateConflictMessage.set(null);
+    }
+  }
+
   loadBookings() {
     this.loading.set(true);
     const endpoint = this.isAdmin ? 'bookings' : 'bookings/my';
     this.api.get<BookingDTO[]>(endpoint).subscribe({
-      next: d => this.bookings.set(d),
+      next: d => {
+        this.bookings.set(d);
+        this._checkDateConflict(); // refresh conflict state after bookings reload
+      },
       complete: () => this.loading.set(false)
     });
   }

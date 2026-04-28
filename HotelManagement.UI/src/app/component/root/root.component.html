@@ -100,6 +100,39 @@
 
       <span class="spacer"></span>
 
+      <!-- SuperAdmin tenant pill -->
+      @if (isSuperAdmin() && tenants().length === 1) {
+        <!-- Single tenant: static pill, no interaction -->
+        <div class="tenant-pill tenant-pill--static tenant-pill--active">
+          <mat-icon class="tenant-pill-icon">domain</mat-icon>
+          <span class="tenant-pill-label">{{ tenants()[0].name }}</span>
+        </div>
+      }
+      @if (isSuperAdmin() && tenants().length > 1) {
+        <!-- Multiple tenants: interactive dropdown -->
+        <button class="tenant-pill" [matMenuTriggerFor]="tenantMenu"
+                [class.tenant-pill--active]="activeTenantId()">
+          <mat-icon class="tenant-pill-icon">domain</mat-icon>
+          <span class="tenant-pill-label">{{ activeTenantName() }}</span>
+          <mat-icon class="tenant-pill-chevron">expand_more</mat-icon>
+        </button>
+
+        <mat-menu #tenantMenu="matMenu" class="tenant-menu-panel">
+          <div class="tenant-menu-header">Switch Tenant</div>
+          @for (t of tenants(); track t.id) {
+            <button mat-menu-item class="tenant-menu-item"
+                    [class.tenant-menu-item--active]="activeTenantId() === t.id"
+                    (click)="selectTenant(t.id)">
+              <span class="tmi-dot"></span>
+              <span>{{ t.name }}</span>
+              @if (activeTenantId() === t.id) {
+                <mat-icon class="tmi-check">check</mat-icon>
+              }
+            </button>
+          }
+        </mat-menu>
+      }
+
       @if (auth.isLoggedIn()) {
         <button class="user-pill" [matMenuTriggerFor]="userMenu">
           <div class="user-pill-avatar">
@@ -131,6 +164,17 @@
             </div>
           </div>
           <mat-divider></mat-divider>
+          <button mat-menu-item [routerLink]="'/profile'">
+            <mat-icon>manage_accounts</mat-icon>
+            <span>My Profile</span>
+          </button>
+          @if (isSuperAdmin()) {
+            <button mat-menu-item [routerLink]="'/tenants'">
+              <mat-icon>domain</mat-icon>
+              <span>Manage Tenants</span>
+            </button>
+          }
+          <mat-divider></mat-divider>
           <button mat-menu-item class="udp-logout" (click)="logout()">
             <mat-icon>logout</mat-icon>
             <span>Sign out</span>
@@ -148,6 +192,15 @@
         </a>
       }
     </mat-toolbar>
+    }
+
+    <!-- Active-tenant scope banner -->
+    @if (activeTenantId()) {
+      <div class="tenant-banner">
+        <mat-icon>domain</mat-icon>
+        Scoped to <strong>{{ activeTenantName() }}</strong> &mdash; all API calls are filtered to this tenant.
+        <button mat-button (click)="clearTenant()"><mat-icon>close</mat-icon> Clear</button>
+      </div>
     }
 
     <main class="app-main" [class.auth-main]="isAuthRoute()">

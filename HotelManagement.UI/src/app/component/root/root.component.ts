@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import {
     Router, RouterModule, RouterLink, RouterLinkActive, NavigationEnd
 } from '@angular/router';
@@ -13,6 +13,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { Menu, MenuGroup, menus, categoryMeta } from '../../model/menus';
 import { AuthService } from '../../services/auth.service';
+import { ApiService } from '../../services/api.service';
+import { TenantDTO } from '../../model/api.models';
 
 const AUTH_ROUTES = ['/login', '/register'];
 
@@ -27,10 +29,51 @@ const AUTH_ROUTES = ['/login', '/register'];
   templateUrl: './root.component.html',
   styleUrl: './root.component.scss'
 })
-export class RootComponent {
+export class RootComponent implements OnInit {
   auth = inject(AuthService);
   private bp = inject(BreakpointObserver);
   private router = inject(Router);
+  private api = inject(ApiService);
+
+  /** All tenants — loaded once for SuperAdmin */
+  tenants = signal<TenantDTO[]>([]);
+
+  ngOnInit() {
+    if (this.auth.hasRole('SuperAdmin')) {
+      this.api.get<TenantDTO[]>('tenants').subscribe({
+        next: t => {
+          this.tenants.set(t);
+          if (t.length === 1) {
+            // Only one tenant — auto-select it silently
+            this.auth.setSelectedTenant(t[0].id);
+          } else if (t.length > 1 && !this.auth.selectedTenantId()) {
+            // Multiple tenants, nothing stored yet — pre-select the first
+            this.auth.setSelectedTenant(t[0].id);
+          }
+        },
+        error: () => this.tenants.set([])
+      });
+    }
+  }
+
+  isSuperAdmin = computed(() => { this.auth.token(); return this.auth.hasRole('SuperAdmin'); });
+
+  activeTenantId = computed(() => {
+    const raw = this.auth.selectedTenantId();
+    return raw != null ? Number(raw) : null;
+  });
+
+  activeTenantName = computed(() => {
+    const id = this.auth.selectedTenantId();
+    const list = this.tenants();
+    if (!list.length) return null;
+    if (id == null) return list[0]?.name ?? null;
+    const match = list.find(t => Number(t.id) === Number(id));
+    return (match ?? list[0])?.name ?? null;
+  });
+
+  selectTenant(tenantId: number | null) { this.auth.setSelectedTenant(tenantId); }
+  clearTenant() { this.auth.clearSelectedTenant(); }
 
   /** True when the current route is login or register */
   isAuthRoute = toSignal(

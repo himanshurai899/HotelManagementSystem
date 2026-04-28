@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ApiService } from '../../services/api.service';
+import { AuthService } from '../../services/auth.service';
 import { TenantCurrencyService, LOCALE_CURRENCY_LIST } from '../../services/tenant-currency.service';
 import { TenantDTO, UserTenantDTO, UserDTO } from '../../model/api.models';
 import { UserFormDialogComponent, UserFormDialogResult } from '../shared/user-form-dialog/user-form-dialog.component';
@@ -36,6 +37,7 @@ import { UserFormDialogComponent, UserFormDialogResult } from '../shared/user-fo
 })
 export class TenantsComponent implements OnInit {
   private api    = inject(ApiService);
+  private auth   = inject(AuthService);
   private fb     = inject(FormBuilder);
   private snack  = inject(MatSnackBar);
   private dialog = inject(MatDialog);

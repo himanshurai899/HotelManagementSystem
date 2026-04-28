@@ -67,7 +67,7 @@ export class ProfileComponent implements OnInit {
     firstName:   [''],
     lastName:    [''],
     email:       ['', [Validators.required, Validators.email]],
-    phoneNumber: ['', [Validators.pattern(/^\d{10}$/)]],
+    phoneNumber: ['', [Validators.pattern(/^\+?\d{7,15}$/)]],  // 7–15 digits, optional leading +
   });
 
   /** Password rules mirror IdentityOptions in Program.cs:

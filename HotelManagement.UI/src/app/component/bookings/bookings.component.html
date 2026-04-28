@@ -112,8 +112,18 @@
               <mat-hint>Must be at least the day after check-in</mat-hint>
             }
           </mat-form-field>
+          @if (dateConflictMessage()) {
+            <div class="conflict-alert">
+              <mat-icon>event_busy</mat-icon>
+              <span>{{ dateConflictMessage() }}</span>
+            </div>
+          }
           <div class="form-actions">
-            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Book</button>
+            <span [matTooltip]="dateConflictMessage() ?? (form.invalid ? 'Please fill all required fields.' : '')"
+                  [matTooltipDisabled]="form.valid && !dateConflictMessage()">
+              <button mat-raised-button color="primary" type="submit"
+                      [disabled]="form.invalid || !!dateConflictMessage()">Book</button>
+            </span>
             <button mat-button type="button" (click)="showForm.set(false)">Cancel</button>
           </div>
         </form>
