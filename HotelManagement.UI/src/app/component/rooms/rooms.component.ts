@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from '../../services/api.service';
@@ -21,7 +22,7 @@ import { RoomDTO, RoomTypeDTO } from '../../model/api.models';
   imports: [
     ReactiveFormsModule, CurrencyPipe, MatTableModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
-    MatCheckboxModule, MatProgressSpinnerModule, MatSnackBarModule
+    MatCheckboxModule, MatButtonToggleModule, MatProgressSpinnerModule, MatSnackBarModule
   ],
   templateUrl: './rooms.component.html',
   styleUrl: './rooms.component.scss'
@@ -40,10 +41,12 @@ export class RoomsComponent implements OnInit {
   displayedColumns = ['roomNumber', 'roomTypeName', 'pricePerNight', 'isAvailable', 'actions'];
 
   form = this.fb.group({
-    roomNumber:   ['', Validators.required],
-    roomTypeId:   [0, Validators.required],
-    isAvailable:  [true],
-    pricePerNight:[0, [Validators.required, Validators.min(0)]]
+    roomNumber:      ['', Validators.required],
+    roomTypeId:      [0, Validators.required],
+    isAvailable:     [true],
+    pricePerNight:   [0, [Validators.required, Validators.min(0)]],
+    allowHourlyStay: [false],
+    hourlyRate:      [null as number | null, Validators.min(0)]
   });
 
   ngOnInit() {
@@ -64,7 +67,9 @@ export class RoomsComponent implements OnInit {
       this.editId.set(room.id);
       this.form.patchValue({
         roomNumber: room.roomNumber, roomTypeId: room.roomTypeId,
-        isAvailable: room.isAvailable, pricePerNight: room.pricePerNight ?? 0
+        isAvailable: room.isAvailable, pricePerNight: room.pricePerNight ?? 0,
+        allowHourlyStay: room.allowHourlyStay ?? false,
+        hourlyRate: room.hourlyRate ?? null
       });
     } else {
       this.editId.set(null);

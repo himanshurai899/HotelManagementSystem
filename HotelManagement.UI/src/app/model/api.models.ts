@@ -2,6 +2,16 @@
 
 export const BOOKING_STATUS_LABELS = ['Pending', 'Confirmed', 'Cancelled', 'CheckedOut'];
 
+/** Mirrors BookingType enum from Shared/Enums/BookingType.cs */
+export const BookingType = {
+  FullDay:   0,
+  NightStay: 1,
+  LongTerm:  2,
+  Yearly:    3,
+  Hourly:    4
+} as const;
+export type BookingType = typeof BookingType[keyof typeof BookingType];
+
 export interface RoomTypeDTO {
   id: number;
   name: string;
@@ -17,6 +27,11 @@ export interface RoomDTO {
   isAvailable: boolean;
   allowHourlyStay: boolean;
   pricePerNight: number;
+  /** null = type unavailable for this room */
+  hourlyRate:   number | null;
+  dailyRate:    number | null;
+  monthlyRate:  number | null;
+  yearlyRate:   number | null;
 }
 
 export interface AmenityDTO {
@@ -25,14 +40,31 @@ export interface AmenityDTO {
   description: string;
 }
 
+export interface BookingRoomDTO {
+  id: number;
+  bookingId: number;
+  roomId: number;
+  roomNumber: string;       // denormalized — avoid complex object graph
+  priceAtBooking: number;
+}
+
 export interface BookingDTO {
   id: number;
   userId: number;
   userName: string;
+  /** Legacy single-room field — server emits the first BookingRoom for backward compat. Read-only on the UI side. */
   roomId: number;
+  /** Legacy single-room field — server emits the first BookingRoom's RoomNumber. Read-only on the UI side. */
   roomNumber: string;
+  /** Phase 12a — authoritative list of rooms on this booking. */
+  rooms: BookingRoomDTO[];
   checkInDate: string;
   checkOutDate: string;
+  /** BookingType enum value */
+  bookingType: BookingType;
+  /** 'HH:mm' string — only set for Hourly bookings */
+  checkInTime:  string | null;
+  checkOutTime: string | null;
   totalPrice: number;
   status: number;
 }

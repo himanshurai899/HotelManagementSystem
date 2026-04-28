@@ -3,6 +3,7 @@ using System.Security.Claims;
 using AutoMapper;
 using HotelManagementSystem.API.Controllers;
 using HotelManagementSystem.Shared.DTOs;
+using HotelManagementSystem.Shared.Enums;
 using HotelManagementSystem.Shared.Interfaces;
 using HotelManagementSystem.Shared.Models;
 using Microsoft.AspNetCore.Authorization;
@@ -22,6 +23,14 @@ namespace HotelManagementSystem.Tests.Controllers
             Mock<IMapper> mapper,
             int userId,
             params string[] roles)
+            => BuildController(repo, mapper, new Mock<IRepository<Room>>(), userId, roles);
+
+        private static BookingsController BuildController(
+            Mock<IRepository<Booking>> repo,
+            Mock<IMapper> mapper,
+            Mock<IRepository<Room>> roomRepo,
+            int userId,
+            params string[] roles)
         {
             var claims = new List<Claim>
             {
@@ -32,7 +41,7 @@ namespace HotelManagementSystem.Tests.Controllers
             var identity = new ClaimsIdentity(claims, "TestAuth");
             var user = new ClaimsPrincipal(identity);
 
-            var controller = new BookingsController(repo.Object, mapper.Object)
+            var controller = new BookingsController(repo.Object, roomRepo.Object, mapper.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -120,7 +129,8 @@ namespace HotelManagementSystem.Tests.Controllers
             var data = new List<Booking> { new() { Id = 1, UserId = 1 } };
             var dto = new List<BookingDTO> { new() { Id = 1, UserId = 1 } };
 
-            repo.Setup(r => r.GetAllAsync()).ReturnsAsync(data);
+            repo.Setup(r => r.GetAllWithIncludesAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Booking, object>>[]>()))
+                .ReturnsAsync(data);
             mapper.Setup(m => m.Map<IEnumerable<BookingDTO>>(data)).Returns(dto);
 
             var sut = BuildController(repo, mapper, userId: 99, "SuperAdmin");
@@ -151,7 +161,11 @@ namespace HotelManagementSystem.Tests.Controllers
         {
             var repo = new Mock<IRepository<Booking>>();
             var mapper = new Mock<IMapper>();
-            repo.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Booking { Id = 1, UserId = 999 });
+            // Phase 12a — controller now uses GetByIdWithIncludesAsync to load BookingRooms.
+            repo.Setup(r => r.GetByIdWithIncludesAsync(
+                    1,
+                    It.IsAny<System.Linq.Expressions.Expression<Func<Booking, object>>[]>()))
+                .ReturnsAsync(new Booking { Id = 1, UserId = 999 });
 
             var sut = BuildController(repo, mapper, userId: 1, "Customer");
 
@@ -166,13 +180,29 @@ namespace HotelManagementSystem.Tests.Controllers
             var repo = new Mock<IRepository<Booking>>();
             var mapper = new Mock<IMapper>();
 
-            var dtoIn = new BookingDTO { UserId = 999, RoomId = 5 }; // attempted spoof
-            var entity = new Booking { UserId = 999, RoomId = 5 };
+            // Phase 12a — multi-room: spoofed UserId in DTO must be overwritten from the JWT.
+            var dtoIn = new BookingDTO
+            {
+                UserId       = 999,
+                BookingType  = BookingType.NightStay,
+                CheckInDate  = new DateTime(2026, 6, 1),
+                CheckOutDate = new DateTime(2026, 6, 3),
+                Rooms        = new List<BookingRoomDTO> { new() { RoomId = 5 } }
+            };
+            var entity = new Booking { UserId = 999 };
 
             mapper.Setup(m => m.Map<Booking>(dtoIn)).Returns(entity);
             mapper.Setup(m => m.Map<BookingDTO>(It.IsAny<Booking>())).Returns(new BookingDTO());
 
-            var sut = BuildController(repo, mapper, userId: 7, "Customer");
+            // Stub: empty existing-bookings list so the overlap guard passes.
+            repo.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Booking>());
+
+            // Stub: room 5 must resolve so the controller can snapshot PriceAtBooking.
+            var roomRepo = new Mock<IRepository<Room>>();
+            roomRepo.Setup(r => r.GetByIdAsync(5))
+                .ReturnsAsync(new Room { Id = 5, RoomNumber = "R-5", PricePerNight = 100m });
+
+            var sut = BuildController(repo, mapper, roomRepo, userId: 7, "Customer");
 
             var result = await sut.Create(dtoIn) as CreatedAtActionResult;
 

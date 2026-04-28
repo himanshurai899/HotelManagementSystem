@@ -14,10 +14,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { TenantCurrencyService } from '../../services/tenant-currency.service';
-import { BookingDTO, RoomDTO, BOOKING_STATUS_LABELS } from '../../model/api.models';
+import { BookingDTO, BookingRoomDTO, RoomDTO, BOOKING_STATUS_LABELS, BookingType } from '../../model/api.models';
 
 @Component({
   selector: 'app-bookings',
@@ -26,7 +27,7 @@ import { BookingDTO, RoomDTO, BOOKING_STATUS_LABELS } from '../../model/api.mode
     ReactiveFormsModule, DatePipe, CurrencyPipe, MatTableModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatChipsModule, MatProgressSpinnerModule, MatSnackBarModule,
-    MatDatepickerModule, MatNativeDateModule, MatTooltipModule
+    MatDatepickerModule, MatNativeDateModule, MatTooltipModule, MatButtonToggleModule
   ],
   templateUrl: './bookings.component.html',
   styleUrl: './bookings.component.scss'
@@ -52,6 +53,10 @@ export class BookingsComponent implements OnInit {
   rooms = signal<RoomDTO[]>([]);
   loading = signal(true);
   showForm = signal(false);
+  /** Expose const for template use */
+  readonly BookingType = BookingType;
+  /** Currently selected booking type in the new-booking form */
+  bookingType = signal<BookingType>(BookingType.NightStay);
   statusLabels = BOOKING_STATUS_LABELS;
   displayedColumns = this.isAdmin
     ? ['roomNumber', 'customer', 'checkIn', 'checkOut', 'total', 'status', 'actions']
@@ -70,9 +75,13 @@ export class BookingsComponent implements OnInit {
   minCheckOutDate = signal<Date>(this._tomorrowFrom(new Date()));
 
   form = this.fb.group({
-    roomId: [0, Validators.required],
-    checkInDate: [this.defaultCheckInDate, Validators.required],
-    checkOutDate: [null as Date | null, Validators.required]
+    // Phase 12a — a booking can span multiple rooms; the array is authoritative.
+    roomIds:      [[] as number[], Validators.required],
+    checkInDate:  [this.defaultCheckInDate, Validators.required],
+    checkOutDate: [null as Date | null, Validators.required],
+    // Phase 12c — time fields; required only for Hourly type.
+    checkInTime:  [null as string | null],
+    checkOutTime: [null as string | null]
   });
 
   ngOnInit() {
@@ -86,15 +95,21 @@ export class BookingsComponent implements OnInit {
     });
 
     // When room selection changes, recompute checkout min date
-    this.form.get('roomId')!.valueChanges.subscribe(roomId => {
-      this._updateCheckOutMin(roomId ?? 0);
+    this.form.get('roomIds')!.valueChanges.subscribe(roomIds => {
+      this._updateCheckOutMin(roomIds ?? []);
+      // Auto-switch to Hourly if all selected rooms only support hourly
+      const selected = this.rooms().filter(r => (roomIds ?? []).includes(r.id));
+      if (selected.length > 0 && selected.every(r => r.allowHourlyStay && r.hourlyRate != null
+                                                   && !r.pricePerNight)) {
+        this.bookingType.set(BookingType.Hourly);
+      }
       this._checkDateConflict();
     });
 
     // When check-in changes, push checkout min forward accordingly
     this.form.get('checkInDate')!.valueChanges.subscribe(checkIn => {
-      const roomId = this.form.get('roomId')!.value ?? 0;
-      this._updateCheckOutMin(roomId, checkIn as Date | null);
+      const roomIds = this.form.get('roomIds')!.value ?? [];
+      this._updateCheckOutMin(roomIds, checkIn as Date | null);
       // Clear checkout if it's now before the new min
       const currentOut = this.form.get('checkOutDate')!.value as Date | null;
       if (currentOut && currentOut < this.minCheckOutDate()) {
@@ -132,10 +147,12 @@ export class BookingsComponent implements OnInit {
     return d;
   }
 
-  private _updateCheckOutMin(roomId: number, checkIn?: Date | null) {
-    const room = this.rooms().find(r => r.id === roomId);
+  private _updateCheckOutMin(roomIds: number[], checkIn?: Date | null) {
+    const selected = this.rooms().filter(r => roomIds.includes(r.id));
     const baseDate = checkIn ?? (this.form.get('checkInDate')!.value as Date | null) ?? new Date();
-    if (room?.allowHourlyStay) {
+    // Hourly checkout is only allowed when every selected room supports hourly stay.
+    const allHourly = selected.length > 0 && selected.every(r => r.allowHourlyStay);
+    if (allHourly) {
       // Hourly stays: checkout can be same day — set min to check-in date itself (today)
       const min = new Date(baseDate);
       min.setHours(0, 0, 0, 0);
@@ -146,19 +163,21 @@ export class BookingsComponent implements OnInit {
     }
   }
 
-  /** True if the selected room supports hourly stay */
+  /** True when every selected room supports hourly stay. */
   get selectedRoomIsHourly(): boolean {
-    const roomId = this.form.get('roomId')!.value ?? 0;
-    return this.rooms().find(r => r.id === roomId)?.allowHourlyStay ?? false;
+    const roomIds = this.form.get('roomIds')!.value ?? [];
+    if (!roomIds.length) return false;
+    const selected = this.rooms().filter(r => roomIds.includes(r.id));
+    return selected.length > 0 && selected.every(r => r.allowHourlyStay);
   }
 
-  /** Checks the current form room+dates against existing Pending/Confirmed bookings. */
+  /** Checks the current form rooms+dates against existing Pending/Confirmed bookings. */
   private _checkDateConflict(): void {
-    const roomId   = this.form.get('roomId')!.value ?? 0;
+    const roomIds = (this.form.get('roomIds')!.value ?? []) as number[];
     const checkIn  = this.form.get('checkInDate')!.value  as Date | null;
     const checkOut = this.form.get('checkOutDate')!.value as Date | null;
 
-    if (!roomId || !checkIn || !checkOut) {
+    if (!roomIds.length || !checkIn || !checkOut) {
       this.dateConflictMessage.set(null);
       return;
     }
@@ -166,25 +185,27 @@ export class BookingsComponent implements OnInit {
     const cin  = new Date(checkIn);  cin.setHours(0, 0, 0, 0);
     const cout = new Date(checkOut); cout.setHours(23, 59, 59, 999);
 
-    const conflict = this.bookings().find(b =>
-      b.roomId === roomId &&
-      (b.status === 0 || b.status === 1) &&   // Pending or Confirmed
-      new Date(b.checkInDate) < cout &&
-      new Date(b.checkOutDate) > cin
-    );
-
-    if (conflict) {
-      const room     = this.rooms().find(r => r.id === roomId);
-      const label    = room ? `Room ${room.roomNumber}` : 'This room';
-      const inLabel  = new Date(conflict.checkInDate).toLocaleDateString();
-      const outLabel = new Date(conflict.checkOutDate).toLocaleDateString();
-      const status   = this.statusLabels[conflict.status]?.toLowerCase() ?? 'booked';
-      this.dateConflictMessage.set(
-        `${label} is already ${status} from ${inLabel} to ${outLabel}. Please choose different dates or another room.`
+    // Find the first conflicting (room, booking) pair across all selected rooms.
+    for (const roomId of roomIds) {
+      const conflict = this.bookings().find(b =>
+        (b.status === 0 || b.status === 1) &&                 // Pending or Confirmed
+        (b.rooms?.some(br => br.roomId === roomId) ?? false) &&
+        new Date(b.checkInDate) < cout &&
+        new Date(b.checkOutDate) > cin
       );
-    } else {
-      this.dateConflictMessage.set(null);
+      if (conflict) {
+        const room     = this.rooms().find(r => r.id === roomId);
+        const label    = room ? `Room ${room.roomNumber}` : 'A selected room';
+        const inLabel  = new Date(conflict.checkInDate).toLocaleDateString();
+        const outLabel = new Date(conflict.checkOutDate).toLocaleDateString();
+        const status   = this.statusLabels[conflict.status]?.toLowerCase() ?? 'booked';
+        this.dateConflictMessage.set(
+          `${label} is already ${status} from ${inLabel} to ${outLabel}. Please choose different dates or remove this room.`
+        );
+        return;
+      }
     }
+    this.dateConflictMessage.set(null);
   }
 
   loadBookings() {
@@ -202,23 +223,36 @@ export class BookingsComponent implements OnInit {
   save() {
     if (this.form.invalid) return;
     const val = this.form.value;
-    const checkIn = val.checkInDate ? new Date(val.checkInDate) : null;
-    if (checkIn) checkIn.setHours(11, 0, 0, 0);   // 11:00 AM default check-in
+    const isHourly = this.bookingType() === BookingType.Hourly;
+
+    const checkIn  = val.checkInDate  ? new Date(val.checkInDate)  : null;
     const checkOut = val.checkOutDate ? new Date(val.checkOutDate) : null;
-    if (checkOut) checkOut.setHours(10, 0, 0, 0);  // 10:00 AM default check-out
+
+    if (!isHourly) {
+      if (checkIn)  checkIn.setHours(11, 0, 0, 0);  // 11:00 AM default check-in
+      if (checkOut) checkOut.setHours(10, 0, 0, 0); // 10:00 AM default check-out
+    }
+
+    const roomIds = (val.roomIds ?? []) as number[];
+    const rooms: Partial<BookingRoomDTO>[] = roomIds.map(id => ({ roomId: id }));
+
     this.api.post<BookingDTO>('bookings', {
       id: 0,
       status: 0,
-      roomId: val.roomId,
-      checkInDate: checkIn?.toISOString(),
-      checkOutDate: checkOut?.toISOString()
+      bookingType: this.bookingType(),
+      rooms,
+      checkInDate:  checkIn?.toISOString(),
+      checkOutDate: checkOut?.toISOString(),
+      checkInTime:  isHourly ? (val.checkInTime  ?? null) : null,
+      checkOutTime: isHourly ? (val.checkOutTime ?? null) : null
     }).subscribe({
       next: () => {
         this.snack.open('Booking created!', '', { duration: 2000 });
         this.showForm.set(false);
+        this.bookingType.set(BookingType.NightStay);
         this.loadBookings();
       },
-      error: () => this.snack.open('Error creating booking.', 'Dismiss', { duration: 3000 })
+      error: (err) => this.snack.open(err?.error?.message ?? 'Error creating booking.', 'Dismiss', { duration: 3000 })
     });
   }
 

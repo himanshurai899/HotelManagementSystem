@@ -21,6 +21,7 @@ namespace HotelManagementSystem.Shared.Data
             CompanyProfiles = Set<CompanyProfile>();
             Tenants = Set<Tenant>();
             UserTenants = Set<UserTenant>();
+            BookingRooms = Set<BookingRoom>();
         }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
@@ -33,6 +34,7 @@ namespace HotelManagementSystem.Shared.Data
         public DbSet<CompanyProfile> CompanyProfiles { get; set; }
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<UserTenant> UserTenants { get; set; }
+        public DbSet<BookingRoom> BookingRooms { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -183,6 +185,27 @@ namespace HotelManagementSystem.Shared.Data
                 .HasForeignKey(b => b.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            // Phase 12a — Multi-Room Booking: BookingRoom join entity
+            modelBuilder.Entity<BookingRoom>()
+                .HasOne(br => br.Booking)
+                .WithMany(b => b.BookingRooms)
+                .HasForeignKey(br => br.BookingId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BookingRoom>()
+                .HasOne(br => br.Room)
+                .WithMany()
+                .HasForeignKey(br => br.RoomId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<BookingRoom>()
+                .Property(br => br.PriceAtBooking)
+                .HasColumnType("decimal(18,2)");
+
+            modelBuilder.Entity<BookingRoom>()
+                .HasIndex(br => new { br.BookingId, br.RoomId })
+                .IsUnique();
+
             // Configure decimal properties
             modelBuilder.Entity<Booking>()
                 .Property(b => b.TotalPrice)
@@ -199,6 +222,12 @@ namespace HotelManagementSystem.Shared.Data
             modelBuilder.Entity<Room>()
                 .Property(r => r.PricePerNight)
                 .HasColumnType("decimal(18,2)");
+
+            // Phase 12c — optional rate fields for each booking type
+            modelBuilder.Entity<Room>().Property(r => r.HourlyRate).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Room>().Property(r => r.DailyRate).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Room>().Property(r => r.MonthlyRate).HasColumnType("decimal(18,2)");
+            modelBuilder.Entity<Room>().Property(r => r.YearlyRate).HasColumnType("decimal(18,2)");
 
             // Configure foreign key with no action on delete
             modelBuilder.Entity<User>()

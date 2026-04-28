@@ -80,6 +80,16 @@
           </mat-form-field>
 
           <mat-checkbox formControlName="isAvailable">Available</mat-checkbox>
+          <mat-checkbox formControlName="allowHourlyStay">Allow Hourly Stay</mat-checkbox>
+
+          @if (form.get('allowHourlyStay')?.value) {
+            <mat-form-field appearance="outline">
+              <mat-label>Hourly Rate</mat-label>
+              <input matInput type="number" formControlName="hourlyRate" min="0" />
+              <span matTextSuffix>{{ currencySvc.currencyCode() }} / hr</span>
+              <mat-hint>Leave blank if hourly pricing is not available</mat-hint>
+            </mat-form-field>
+          }
 
           <div class="form-actions">
             <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Save</button>

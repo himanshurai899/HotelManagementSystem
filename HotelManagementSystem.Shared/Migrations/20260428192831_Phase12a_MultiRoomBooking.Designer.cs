@@ -4,6 +4,7 @@ using HotelManagementSystem.Shared.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelManagementSystem.Shared.Migrations
 {
     [DbContext(typeof(HotelDbContext))]
-    partial class HotelDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260428192831_Phase12a_MultiRoomBooking")]
+    partial class Phase12a_MultiRoomBooking
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,20 +62,11 @@ namespace HotelManagementSystem.Shared.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BookingType")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("CheckInDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<TimeSpan?>("CheckInTime")
-                        .HasColumnType("time");
-
                     b.Property<DateTime>("CheckOutDate")
                         .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan?>("CheckOutTime")
-                        .HasColumnType("time");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -327,17 +321,8 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.Property<bool>("AllowHourlyStay")
                         .HasColumnType("bit");
 
-                    b.Property<decimal?>("DailyRate")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<decimal?>("HourlyRate")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
-
-                    b.Property<decimal?>("MonthlyRate")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("PricePerNight")
                         .HasColumnType("decimal(18,2)");
@@ -351,9 +336,6 @@ namespace HotelManagementSystem.Shared.Migrations
 
                     b.Property<int>("TenantId")
                         .HasColumnType("int");
-
-                    b.Property<decimal?>("YearlyRate")
-                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
@@ -615,13 +597,13 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "480ec638-70f9-4421-8203-ea32caa0dfa7",
+                            ConcurrencyStamp = "5f97aa72-254a-4c90-8db6-ca69381a0c87",
                             Email = "admin@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEN1jJZKR0N0kkX0uEEMFWwldWfqEzIRKnkwsojb+Cqbe4qLv5SszisDGpslT9PJA0A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEMzKfj/AvhsHYNLgZ+xtxRfDevk5FAbQ9VrfPAbALqdVXbSYD8/c1jC9j+8s+yBwxQ==",
                             PhoneNumber = "1234567890",
                             PhoneNumberConfirmed = false,
                             RoleId = 1,
@@ -633,13 +615,13 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "91aa0dbd-fb2b-496c-8e0b-4ab441820ca5",
+                            ConcurrencyStamp = "cd82df7c-ea9b-4129-b669-803b75d42855",
                             Email = "guest@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "GUEST@EXAMPLE.COM",
                             NormalizedUserName = "GUEST",
-                            PasswordHash = "AQAAAAIAAYagAAAAEAinLcyOic6hJTujQHIfsS4sOt1a2VIBP03D+XEQSKKYyNFc+w/gwhJ/MzrqiVOj7Q==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEP+ccE1FcLqz5RasVw4nzR05ykua4zNmQ+Q2oMqnSXDlNnVCdDL3p4kiqQjGKhoFPw==",
                             PhoneNumber = "0987654321",
                             PhoneNumberConfirmed = false,
                             RoleId = 2,
@@ -651,13 +633,13 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 3,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "873681e1-2c8e-447e-b2b4-82e3318a2515",
+                            ConcurrencyStamp = "53f662ab-2516-4fd6-858a-f424eaea3e8b",
                             Email = "superadmin@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "SUPERADMIN@EXAMPLE.COM",
                             NormalizedUserName = "SUPERADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEKYX74rJ4GTXsWPfWkrd34PCW88OVXqBCA8SNE+VxCjH+OUuMPwPXNEjWHhr8ZG8iA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENIPafAeh0AeSlsbjzAA5Fdv2WholRBOdaGCgettPLrWA34yKPJ4s0uoTrYZPQxWAA==",
                             PhoneNumber = "1112223333",
                             PhoneNumberConfirmed = false,
                             RoleId = 4,

@@ -163,6 +163,15 @@ builder.Services.AddAuthorizationBuilder()
                  .AddPolicy("ViewReports",       policy => policy.RequireClaim("Permission", "ViewReports"));
 
 var app = builder.Build();
+
+// Phase 12a — Auto-apply EF Core migrations on startup. Idempotent; safe to run on every boot.
+// Wrapped in a service scope so HotelDbContext (scoped) can be resolved.
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<HotelDbContext>();
+    db.Database.Migrate();
+}
+
 // Configure the HTTP request pipeline.
 
 // Global exception handler — must be early so it wraps all subsequent middleware.

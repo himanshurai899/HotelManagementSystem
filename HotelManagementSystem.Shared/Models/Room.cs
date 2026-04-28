@@ -12,7 +12,15 @@
         public bool IsAvailable { get; set; }
         public bool AllowHourlyStay { get; set; }
         public decimal PricePerNight { get; set; } = 0;
-        public ICollection<Booking> Bookings { get; set; }
+
+        // Phase 12c — Booking types (Option C: null rate ⇒ type unavailable for this room).
+        public decimal? HourlyRate { get; set; }    // required for Hourly bookings
+        public decimal? DailyRate { get; set; }     // forward-compat for FullDay (Phase 17)
+        public decimal? MonthlyRate { get; set; }   // forward-compat for LongTerm (Phase 17)
+        public decimal? YearlyRate { get; set; }    // forward-compat for Yearly (Phase 17)
+
+        // Phase 12a — Multi-Room Booking: direct Booking ↔ Room link replaced by BookingRoom join.
+        // Reverse lookup is via BookingRoom.RoomId.
         public ICollection<RoomAmenity> RoomAmenities { get; set; }
     }
 }

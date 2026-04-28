@@ -22,8 +22,18 @@
         }
 
         <ng-container matColumnDef="roomNumber">
-          <th mat-header-cell *matHeaderCellDef>Room</th>
-          <td mat-cell *matCellDef="let b">{{ b.roomNumber }}</td>
+          <th mat-header-cell *matHeaderCellDef>Rooms</th>
+          <td mat-cell *matCellDef="let b">
+            @if (b.rooms?.length) {
+              <mat-chip-set>
+                @for (br of b.rooms; track br.id) {
+                  <mat-chip>{{ br.roomNumber }}</mat-chip>
+                }
+              </mat-chip-set>
+            } @else {
+              {{ b.roomNumber }}
+            }
+          </td>
         </ng-container>
         <ng-container matColumnDef="checkIn">
           <th mat-header-cell *matHeaderCellDef>Check In</th>
@@ -81,9 +91,26 @@
       <mat-card-header><mat-card-title>New Booking</mat-card-title></mat-card-header>
       <mat-card-content>
         <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+
+          <!-- Booking Type toggle -->
+          <div class="booking-type-row">
+            <label class="type-label">Booking Type</label>
+            <mat-button-toggle-group [value]="bookingType()"
+                                     (change)="bookingType.set($event.value)">
+              <mat-button-toggle [value]="BookingType.NightStay">Nightly</mat-button-toggle>
+              <mat-button-toggle [value]="BookingType.FullDay">Full Day (1 night)</mat-button-toggle>
+              <mat-button-toggle [value]="BookingType.LongTerm">Long Term</mat-button-toggle>
+              <mat-button-toggle [value]="BookingType.Hourly"
+                                 [disabled]="!selectedRoomIsHourly"
+                                 [matTooltip]="selectedRoomIsHourly ? '' : 'All selected rooms must support hourly stay'">
+                Hourly
+              </mat-button-toggle>
+            </mat-button-toggle-group>
+          </div>
+
           <mat-form-field appearance="outline">
-            <mat-label>Room</mat-label>
-            <mat-select formControlName="roomId">
+            <mat-label>Rooms</mat-label>
+            <mat-select formControlName="roomIds" multiple>
               @for (r of rooms(); track r.id) {
                 <mat-option [value]="r.id">
                   Room {{ r.roomNumber }} — {{ r.roomTypeName }}
@@ -91,6 +118,7 @@
                 </mat-option>
               }
             </mat-select>
+            <mat-hint>Select one or more rooms for this booking</mat-hint>
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Check In</mat-label>
@@ -112,6 +140,20 @@
               <mat-hint>Must be at least the day after check-in</mat-hint>
             }
           </mat-form-field>
+
+          <!-- Time fields — only visible for Hourly bookings -->
+          @if (bookingType() === BookingType.Hourly) {
+            <mat-form-field appearance="outline">
+              <mat-label>Check-in Time</mat-label>
+              <input matInput type="time" formControlName="checkInTime" />
+              <mat-hint>HH:MM (24-hour)</mat-hint>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Check-out Time</mat-label>
+              <input matInput type="time" formControlName="checkOutTime" />
+              <mat-hint>Must be after check-in time</mat-hint>
+            </mat-form-field>
+          }
           @if (dateConflictMessage()) {
             <div class="conflict-alert">
               <mat-icon>event_busy</mat-icon>

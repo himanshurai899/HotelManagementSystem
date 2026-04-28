@@ -31,17 +31,47 @@ namespace HotelManagementSystem.API.Profiles
                     opt => opt.MapFrom(src => src.Tenant != null ? src.Tenant.Name : string.Empty))
                 .ReverseMap()
                 .ForMember(dest => dest.Tenant, opt => opt.Ignore());
+            // Phase 12a — BookingRoom join entity
+            CreateMap<BookingRoom, BookingRoomDTO>()
+                .ForMember(dest => dest.RoomNumber,
+                    opt => opt.MapFrom(src => src.Room != null ? src.Room.RoomNumber : string.Empty))
+                .ReverseMap()
+                .ForMember(dest => dest.Room,    opt => opt.Ignore())
+                .ForMember(dest => dest.Booking, opt => opt.Ignore());
+
             CreateMap<Booking, BookingDTO>()
                 .ForMember(dest => dest.UserName,
                     opt => opt.MapFrom(src => src.User != null ? src.User.UserName : string.Empty))
+                .ForMember(dest => dest.Rooms,
+                    opt => opt.MapFrom(src => src.BookingRooms))
+                // Legacy derived fields — pulled from the first BookingRoom for backward compat.
+                .ForMember(dest => dest.RoomId,
+                    opt => opt.MapFrom(src => src.BookingRooms.FirstOrDefault() != null
+                        ? src.BookingRooms.First().RoomId : 0))
                 .ForMember(dest => dest.RoomNumber,
-                    opt => opt.MapFrom(src => src.Room != null ? src.Room.RoomNumber : string.Empty))
+                    opt => opt.MapFrom(src => src.BookingRooms.FirstOrDefault() != null && src.BookingRooms.First().Room != null
+                        ? src.BookingRooms.First().Room.RoomNumber : string.Empty))
                 .ForMember(dest => dest.TenantName,
                     opt => opt.MapFrom(src => src.Tenant != null ? src.Tenant.Name : string.Empty))
+                // Phase 12c — TimeSpan → "HH:mm" string
+                .ForMember(dest => dest.CheckInTime,
+                    opt => opt.MapFrom(src => src.CheckInTime != null
+                        ? src.CheckInTime.Value.ToString(@"hh\:mm") : null))
+                .ForMember(dest => dest.CheckOutTime,
+                    opt => opt.MapFrom(src => src.CheckOutTime != null
+                        ? src.CheckOutTime.Value.ToString(@"hh\:mm") : null))
                 .ReverseMap()
-                .ForMember(dest => dest.User,   opt => opt.Ignore())
-                .ForMember(dest => dest.Room,   opt => opt.Ignore())
-                .ForMember(dest => dest.Tenant, opt => opt.Ignore());
+                .ForMember(dest => dest.User,         opt => opt.Ignore())
+                .ForMember(dest => dest.Tenant,       opt => opt.Ignore())
+                // Controller assembles BookingRooms server-side with authoritative PriceAtBooking.
+                .ForMember(dest => dest.BookingRooms, opt => opt.Ignore())
+                // Phase 12c — "HH:mm" string → TimeSpan (controller handles Hourly-specific logic)
+                .ForMember(dest => dest.CheckInTime,
+                    opt => opt.MapFrom(src => string.IsNullOrEmpty(src.CheckInTime)
+                        ? (TimeSpan?)null : TimeSpan.Parse(src.CheckInTime)))
+                .ForMember(dest => dest.CheckOutTime,
+                    opt => opt.MapFrom(src => string.IsNullOrEmpty(src.CheckOutTime)
+                        ? (TimeSpan?)null : TimeSpan.Parse(src.CheckOutTime)));
             CreateMap<Payment, PaymentDTO>().ReverseMap();
             CreateMap<Amenity, AmenityDTO>()
                 .ForMember(dest => dest.TenantName,
@@ -57,9 +87,17 @@ namespace HotelManagementSystem.API.Profiles
             // ── Billing & Payments (Phase 8) ──────────────────────────────────
             CreateMap<Invoice, InvoiceDTO>()
                 .ForMember(dest => dest.GuestName,
-                    opt => opt.MapFrom(src => src.Booking != null ? src.Booking.User.UserName : string.Empty))
+                    opt => opt.MapFrom(src => src.Booking != null && src.Booking.User != null
+                        ? src.Booking.User.UserName : string.Empty))
+                // Phase 12a — invoice room number derived from the first BookingRoom.
                 .ForMember(dest => dest.RoomNumber,
-                    opt => opt.MapFrom(src => src.Booking != null ? src.Booking.Room.RoomNumber : string.Empty))
+                    opt => opt.MapFrom(src =>
+                        src.Booking != null
+                     && src.Booking.BookingRooms != null
+                     && src.Booking.BookingRooms.Any()
+                     && src.Booking.BookingRooms.First().Room != null
+                            ? src.Booking.BookingRooms.First().Room.RoomNumber
+                            : string.Empty))
                 .ForMember(dest => dest.TenantName,
                     opt => opt.MapFrom(src => src.Tenant != null ? src.Tenant.Name : string.Empty))
                 .ReverseMap()
