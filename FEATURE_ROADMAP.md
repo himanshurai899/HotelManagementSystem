@@ -122,6 +122,30 @@ export interface InvoiceItem {
 - `GET /api/invoices/{id}/pdf` returns `FileContentResult` with `application/pdf`
 - Do NOT use client-side PDF generation
 
+### Extra — Beyond Original Roadmap
+
+| Addition | Detail |
+|---|---|
+| `Shared/Models/Payment.cs` | Payment entity — `BookingId`, `Amount`, `PaymentDate`, `PaymentStatus` |
+| `Shared/DTOs/PaymentDTO.cs` | Flat DTO |
+| `API/Controllers/PaymentsController.cs` | CRUD; Customer = own; Administrator = all |
+| Angular `PaymentsComponent` | `/payments` — `data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] }` |
+| `Shared/Models/CompanyProfile.cs` | Single-row branding/settings table — `CompanyName`, `LogoUrl`, `Address`, `GstinNumber`, `PrimaryColor`, `AccentColor`, `FontFamily` |
+| `Shared/DTOs/CompanyProfileDTO.cs` | Flat DTO |
+| `API/Controllers/CompanyProfileController.cs` | GET (AllowAnonymous); PUT/upload-logo (Administrator + ManageCompanyProfile policy) |
+| Angular `CompanyProfileComponent` | `/company-profile` — `data: { roles: ['Administrator', 'SuperAdmin'] }` |
+| `CompanyProfileDTO` TypeScript interface | In `api.models.ts` |
+| `Shared/Interfaces/IFileStorageService.cs` | Interface — `Task<string> SaveAsync(Stream, string, string)`; `Task DeleteAsync(string)` |
+| `API/Services/LocalFileStorageService.cs` | Saves to `wwwroot/uploads/`; returns `/uploads/{guid}{ext}` |
+| `API/Services/AzureBlobStorageService.cs` | Azure Blob Storage implementation of `IFileStorageService` |
+| `Shared/Utilities/InvoicePdfUtility.cs` | ✅ Implemented using QuestPDF |
+| User profile fields | `User.cs` gains `FirstName`, `LastName`, `ProfilePhotoUrl`, `IdProofType`, `IdProofNumber` |
+| `API/Controllers/ProfileController.cs` | `GET/PUT /api/profile`; `PUT /api/profile/password`; `PUT /api/profile/photo` |
+| Angular `ProfileComponent` | `/profile` — public (auth only, no role guard) |
+| Angular `AccessControlComponent` | `/access-control` — unified Users + Roles + Permissions page; `data: { roles: ['Administrator', 'SuperAdmin'] }` |
+| `Shared/DTOs/UpdateProfileDTO.cs`, `ChangePasswordDTO.cs`, `CreateUserDTO.cs` | Flat request DTOs |
+| `UpdateProfileRequest`, `ChangePasswordRequest`, `ProfilePhotoResponse`, `CreateUserRequest` | TypeScript interfaces in `api.models.ts` |
+
 ---
 
 ## Phase 9 — Multi-Tenant SaaS
@@ -240,6 +264,8 @@ export interface Tenant {
 | JWT login response includes `TenantId` claim (primary tenant from `UserTenant`) | ✅ |
 | Angular `TenantsComponent` + route + `menus.ts` nav entry | ✅ |
 | `TenantDTO` + `UserTenantDTO` TypeScript interfaces in `api.models.ts` | ✅ |
+| `TenantDTO.CurrencyCode` + `TenantDTO.Locale` fields (ISO 4217 / IETF locale) | ✅ |
+| `DefaultCurrencyDTO` C# DTO + TypeScript interface in `api.models.ts` | ✅ |
 
 #### ⚠️ Remaining Gap — Tenant-Filtered GET Endpoints
 
@@ -511,6 +537,18 @@ export interface TopRoomType {
 
 ### Overview
 Extends the core booking system to support multi-room reservations per booking, history-based rebooking for returning customers, hourly stays, and room blocking for maintenance or holds.
+
+### ✅ Implemented Items (as of Phase 12 in-progress)
+
+| Item | Detail |
+|---|---|
+| `Room.AllowHourlyStay` (`bool`) | Added to `Room.cs`, `RoomDTO.cs`, `api.models.ts`; migration applied |
+| `Room.PricePerNight` (`decimal`) | Added to `Room.cs`, `RoomDTO.cs`, `api.models.ts`; migration applied |
+| `GET /api/bookings/calendar` | Returns `BookingCalendarEntry[]` for a given year+month; `[Authorize(Roles = "Administrator,SuperAdmin")]` |
+| `BookingCalendarEntry` TypeScript interface | In `api.models.ts` — `roomId`, `roomNumber`, `customerName`, `checkInDate`, `checkOutDate`, `status` |
+| Angular `BookingCalendarComponent` | `/booking-calendar` — `data: { roles: ['Administrator', 'SuperAdmin'] }`; month/year navigation |
+| Booking approve/reject workflow | `PUT /api/bookings/{id}/approve` and `PUT /api/bookings/{id}/reject` — `[Authorize(Policy = "ManageBookings")]` |
+| Booking overlap conflict guard | `POST /api/bookings` rejects requests where room is already booked for overlapping dates |
 
 ### 12a — Multi-Room Booking
 

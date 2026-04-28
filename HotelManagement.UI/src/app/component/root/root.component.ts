@@ -152,6 +152,12 @@ export class RootComponent implements OnInit {
     return roles[0] ?? '';
   });
 
+  /** True when the logged-in user is a plain Customer — role label is hidden in UI */
+  isCustomer = computed(() => {
+    this.auth.token();
+    return this.auth.hasRole('Customer') && !this.auth.hasRole('Administrator') && !this.auth.hasRole('SuperAdmin');
+  });
+
   logout() { this.auth.logout(); }
 
   closeOnHandset(sidenav: MatSidenav) {

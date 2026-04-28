@@ -35,7 +35,9 @@
         }
         <div class="user-info">
           <strong>{{ displayName() }}</strong>
-          <span>{{ primaryRole() }}</span>
+          @if (!isCustomer()) {
+            <span>{{ primaryRole() }}</span>
+          }
         </div>
       </div>
       <mat-divider></mat-divider>
@@ -144,7 +146,9 @@
           </div>
           <div class="user-pill-info hide-sm">
             <span class="user-pill-name">{{ displayName() }}</span>
-            <span class="user-pill-role">{{ primaryRole() }}</span>
+            @if (!isCustomer()) {
+              <span class="user-pill-role">{{ primaryRole() }}</span>
+            }
           </div>
           <mat-icon class="user-pill-chevron">expand_more</mat-icon>
         </button>
@@ -160,7 +164,9 @@
             </div>
             <div class="udp-info">
               <strong>{{ displayName() }}</strong>
-              <span class="udp-badge">{{ primaryRole() }}</span>
+              @if (!isCustomer()) {
+                <span class="udp-badge">{{ primaryRole() }}</span>
+              }
             </div>
           </div>
           <mat-divider></mat-divider>

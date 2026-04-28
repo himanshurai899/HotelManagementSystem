@@ -511,6 +511,7 @@
 
   .udp-badge {
     display: inline-block;
+    align-self: flex-start;
     margin-top: 3px;
     padding: 1px 8px;
     border-radius: 20px;
@@ -519,6 +520,7 @@
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
     letter-spacing: 0.3px;
+    white-space: nowrap;
   }
 }
 
