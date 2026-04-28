@@ -286,6 +286,17 @@ export interface DefaultCurrencyDTO {
   locale: string;
 }
 
+// ── History-Based Rebooking (Phase 12b) ─────────────────────────────────────────
+
+export interface RebookSuggestionDTO {
+  originalBookingId: number;
+  roomIds: number[];
+  roomsSummary: string;   // denormalized — avoid complex object graph
+  lastStayDate: string;   // 'yyyy-MM-dd'
+  durationDays: number;
+  totalPrice: number;
+}
+
 // ── Room Blocking (Phase 12d) ─────────────────────────────────────────────────
 
 /** Mirrors RoomBlockType enum from Shared/Enums/RoomBlockType.cs */

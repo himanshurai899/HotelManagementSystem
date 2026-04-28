@@ -27,3 +27,40 @@
 .row-pending   { background: rgba(255, 193, 7, 0.06); }
 .row-confirmed { background: rgba(25, 118, 210, 0.04); }
 .row-cancelled { opacity: 0.55; }
+
+// Phase 12b — Past Stays / Rebook Suggestions
+.suggestions-card {
+  margin-bottom: 16px;
+  mat-card-title { display: flex; align-items: center; gap: 8px; }
+}
+
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.suggestion-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #fafafa;
+
+  &:hover { background: #f3f3f3; }
+
+  .suggestion-icon { color: #1976d2; flex-shrink: 0; }
+
+  .suggestion-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+
+    .suggestion-rooms { font-weight: 500; font-size: 0.9rem; }
+    .suggestion-meta  { font-size: 0.8rem; color: rgba(0,0,0,.55); }
+  }
+}

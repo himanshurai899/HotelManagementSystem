@@ -44,6 +44,54 @@ namespace HotelManagementSystem.API.Controllers
             return Ok(_mapper.Map<IEnumerable<BookingDTO>>(mine));
         }
 
+        // GET api/bookings/history
+        // Returns last 5 distinct room-set configurations from the current user's Completed bookings.
+        [HttpGet("history")]
+        [Authorize(Roles = "Administrator,SuperAdmin,Customer")]
+        public async Task<IActionResult> GetRebookHistory()
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var all = await _repo.GetAllWithIncludesAsync(b => b.User, b => b.BookingRooms);
+
+            var completed = all
+                .Where(b => b.UserId == userId && b.Status == BookingStatus.Completed)
+                .OrderByDescending(b => b.CheckOutDate)
+                .ToList();
+
+            // Deduplicate by sorted room-ID fingerprint; keep the most-recent occurrence.
+            var seen        = new HashSet<string>();
+            var suggestions = new List<RebookSuggestionDTO>();
+
+            foreach (var b in completed)
+            {
+                if (suggestions.Count >= 5) break;
+                var roomIds = b.BookingRooms.Select(br => br.RoomId).OrderBy(id => id).ToList();
+                var key = string.Join(",", roomIds);
+                if (!seen.Add(key)) continue;
+
+                // Resolve room numbers for the summary label.
+                var roomNumbers = new List<string>();
+                foreach (var rid in roomIds)
+                {
+                    var room = await _roomRepo.GetByIdAsync(rid);
+                    if (room != null) roomNumbers.Add(room.RoomNumber);
+                }
+                var summary = string.Join(", ", roomNumbers);
+
+                suggestions.Add(new RebookSuggestionDTO
+                {
+                    OriginalBookingId = b.Id,
+                    RoomIds           = roomIds,
+                    RoomsSummary      = summary,
+                    LastStayDate      = b.CheckInDate,
+                    DurationDays      = (int)Math.Max(1, Math.Ceiling((b.CheckOutDate - b.CheckInDate).TotalDays)),
+                    TotalPrice        = b.TotalPrice
+                });
+            }
+
+            return Ok(suggestions);
+        }
+
         // GET api/bookings/calendar?year=2026&month=4
         // Returns one entry per (booking × booked-room) overlapping the requested month.
         [HttpGet("calendar")]

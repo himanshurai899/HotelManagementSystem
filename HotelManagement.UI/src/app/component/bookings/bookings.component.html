@@ -86,6 +86,36 @@
     </mat-card>
   }
 
+  <!-- Past Stays / Rebook Suggestions — Customer only -->
+  @if (!isAdmin && suggestions().length > 0) {
+    <mat-card class="suggestions-card">
+      <mat-card-header>
+        <mat-card-title><mat-icon>history</mat-icon> Past Stays</mat-card-title>
+        <mat-card-subtitle>Rebook a previous stay with one click</mat-card-subtitle>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="suggestions-list">
+          @for (s of suggestions(); track s.originalBookingId) {
+            <div class="suggestion-row">
+              <mat-icon class="suggestion-icon">hotel</mat-icon>
+              <div class="suggestion-info">
+                <span class="suggestion-rooms">{{ s.roomsSummary }}</span>
+                <span class="suggestion-meta">
+                  {{ s.durationDays }} night{{ s.durationDays === 1 ? '' : 's' }} &middot;
+                  last stayed {{ s.lastStayDate | date:'mediumDate' }} &middot;
+                  {{ s.totalPrice | currency:currencySvc.currencyCode():'symbol':'1.2-2':currencySvc.locale() }}
+                </span>
+              </div>
+              <button mat-stroked-button color="primary" (click)="rebook(s)">
+                <mat-icon>replay</mat-icon> Rebook
+              </button>
+            </div>
+          }
+        </div>
+      </mat-card-content>
+    </mat-card>
+  }
+
   @if (showForm()) {
     <mat-card class="form-card">
       <mat-card-header><mat-card-title>New Booking</mat-card-title></mat-card-header>

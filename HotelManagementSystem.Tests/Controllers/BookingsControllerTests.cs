@@ -269,5 +269,127 @@ namespace HotelManagementSystem.Tests.Controllers
 
             Assert.IsType<NotFoundResult>(result);
         }
+
+        // =====================================================================
+        //  PHASE 12b — History-Based Rebooking
+        // =====================================================================
+
+        [Fact]
+        public async Task GetRebookHistory_Returns200_WithSuggestions()
+        {
+            // Arrange — one CheckedOut booking for the current user (userId=1)
+            var repo     = new Mock<IRepository<Booking>>();
+            var roomRepo = new Mock<IRepository<Room>>();
+            var mapper   = new Mock<IMapper>();
+
+            var bookingRooms = new List<BookingRoom> { new() { RoomId = 10 } };
+            var booking = new Booking
+            {
+                Id          = 1,
+                UserId      = 1,
+                Status      = BookingStatus.Completed,
+                CheckInDate = new DateTime(2026, 1, 1),
+                CheckOutDate= new DateTime(2026, 1, 3),
+                TotalPrice  = 200m,
+                BookingRooms= bookingRooms
+            };
+
+            repo.Setup(r => r.GetAllWithIncludesAsync(
+                    It.IsAny<System.Linq.Expressions.Expression<Func<Booking, object>>[]>()))
+                .ReturnsAsync(new List<Booking> { booking });
+
+            roomRepo.Setup(r => r.GetByIdAsync(10))
+                .ReturnsAsync(new Room { Id = 10, RoomNumber = "101" });
+
+            var sut = BuildController(repo, mapper, roomRepo, userId: 1, "Customer");
+
+            // Act
+            var result = await sut.GetRebookHistory() as OkObjectResult;
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(200, result!.StatusCode);
+            var suggestions = Assert.IsAssignableFrom<IEnumerable<HotelManagementSystem.Shared.DTOs.RebookSuggestionDTO>>(result.Value);
+            Assert.Single(suggestions);
+            var s = suggestions.First();
+            Assert.Equal(1, s.OriginalBookingId);
+            Assert.Contains(10, s.RoomIds);
+            Assert.Equal(2, s.DurationDays);
+            Assert.Equal(200m, s.TotalPrice);
+        }
+
+        [Fact]
+        public async Task GetRebookHistory_ReturnsEmpty_WhenNoCheckedOutBookings()
+        {
+            // Arrange — user has only a Pending booking
+            var repo     = new Mock<IRepository<Booking>>();
+            var roomRepo = new Mock<IRepository<Room>>();
+            var mapper   = new Mock<IMapper>();
+
+            repo.Setup(r => r.GetAllWithIncludesAsync(
+                    It.IsAny<System.Linq.Expressions.Expression<Func<Booking, object>>[]>()))
+                .ReturnsAsync(new List<Booking>
+                {
+                    new() { Id = 1, UserId = 1, Status = BookingStatus.Pending, BookingRooms = [] }
+                });
+
+            var sut = BuildController(repo, mapper, roomRepo, userId: 1, "Customer");
+
+            // Act
+            var result = await sut.GetRebookHistory() as OkObjectResult;
+
+            // Assert
+            Assert.NotNull(result);
+            var suggestions = Assert.IsAssignableFrom<IEnumerable<HotelManagementSystem.Shared.DTOs.RebookSuggestionDTO>>(result.Value);
+            Assert.Empty(suggestions);
+        }
+
+        [Fact]
+        public async Task GetRebookHistory_DeduplicatesIdenticalRoomSets()
+        {
+            // Arrange — two CheckedOut bookings with the same room (should yield only 1 suggestion)
+            var repo     = new Mock<IRepository<Booking>>();
+            var roomRepo = new Mock<IRepository<Room>>();
+            var mapper   = new Mock<IMapper>();
+
+            var rooms = new List<BookingRoom> { new() { RoomId = 5 } };
+            var bookings = new List<Booking>
+            {
+                new() { Id=1, UserId=1, Status=BookingStatus.Completed,
+                        CheckInDate=new DateTime(2026,3,1), CheckOutDate=new DateTime(2026,3,2),
+                        TotalPrice=100m, BookingRooms=rooms },
+                new() { Id=2, UserId=1, Status=BookingStatus.Completed,
+                        CheckInDate=new DateTime(2026,2,1), CheckOutDate=new DateTime(2026,2,2),
+                        TotalPrice=100m, BookingRooms=rooms }
+            };
+
+            repo.Setup(r => r.GetAllWithIncludesAsync(
+                    It.IsAny<System.Linq.Expressions.Expression<Func<Booking, object>>[]>()))
+                .ReturnsAsync(bookings);
+
+            roomRepo.Setup(r => r.GetByIdAsync(5))
+                .ReturnsAsync(new Room { Id = 5, RoomNumber = "205" });
+
+            var sut = BuildController(repo, mapper, roomRepo, userId: 1, "Customer");
+
+            // Act
+            var result = await sut.GetRebookHistory() as OkObjectResult;
+
+            // Assert — only 1 suggestion (deduplicated); most recent stay is booking id=1
+            Assert.NotNull(result);
+            var suggestions = Assert.IsAssignableFrom<IEnumerable<HotelManagementSystem.Shared.DTOs.RebookSuggestionDTO>>(result.Value)
+                .ToList();
+            Assert.Single(suggestions);
+            Assert.Equal(1, suggestions[0].OriginalBookingId);
+        }
+
+        [Fact]
+        public void GetRebookHistory_AllowsSuperAdminRole()
+        {
+            var roles = GetAuthorizeAttrs(nameof(BookingsController.GetRebookHistory))
+                .Where(a => !string.IsNullOrEmpty(a.Roles))
+                .SelectMany(a => a.Roles!.Split(',', StringSplitOptions.TrimEntries));
+            Assert.Contains("SuperAdmin", roles);
+        }
     }
 }

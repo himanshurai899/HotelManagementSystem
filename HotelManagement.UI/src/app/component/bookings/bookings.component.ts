@@ -18,7 +18,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
 import { TenantCurrencyService } from '../../services/tenant-currency.service';
-import { BookingDTO, BookingRoomDTO, RoomDTO, BOOKING_STATUS_LABELS, BookingType } from '../../model/api.models';
+import { BookingDTO, BookingRoomDTO, RoomDTO, BOOKING_STATUS_LABELS, BookingType, RebookSuggestionDTO } from '../../model/api.models';
 
 @Component({
   selector: 'app-bookings',
@@ -49,7 +49,8 @@ export class BookingsComponent implements OnInit {
   canModify = !this.isAdmin || this.auth.hasClaim('Permission', 'ManageBookings');
   /** Approve/Reject require both Admin role AND ManageBookings policy */
   canApprove = this.isAdmin && this.auth.hasClaim('Permission', 'ManageBookings');
-  bookings = signal<BookingDTO[]>([]);
+  bookings    = signal<BookingDTO[]>([]);
+  suggestions = signal<RebookSuggestionDTO[]>([]);
   rooms = signal<RoomDTO[]>([]);
   loading = signal(true);
   showForm = signal(false);
@@ -86,6 +87,11 @@ export class BookingsComponent implements OnInit {
 
   ngOnInit() {
     this.loadBookings();
+    if (!this.isAdmin) {
+      this.api.get<RebookSuggestionDTO[]>('bookings/history').subscribe({
+        next: d => this.suggestions.set(d)
+      });
+    }
     this.api.get<RoomDTO[]>('rooms').subscribe({
       next: d => {
         this.rooms.set(d.filter(r => r.isAvailable));
@@ -206,6 +212,29 @@ export class BookingsComponent implements OnInit {
       }
     }
     this.dateConflictMessage.set(null);
+  }
+
+  rebook(s: RebookSuggestionDTO) {
+    const checkIn  = new Date();
+    checkIn.setDate(checkIn.getDate() + 1);
+    checkIn.setHours(11, 0, 0, 0);
+    const checkOut = new Date(checkIn);
+    checkOut.setDate(checkOut.getDate() + s.durationDays);
+    checkOut.setHours(10, 0, 0, 0);
+
+    this.bookingType.set(BookingType.NightStay);
+    this.form.patchValue({
+      roomIds:      s.roomIds,
+      checkInDate:  checkIn,
+      checkOutDate: checkOut,
+      checkInTime:  null,
+      checkOutTime: null
+    });
+    this.showForm.set(true);
+    // Scroll to form after next render tick
+    setTimeout(() => {
+      document.querySelector('.form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
   }
 
   loadBookings() {
