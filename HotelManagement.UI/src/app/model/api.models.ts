@@ -16,6 +16,7 @@ export interface RoomDTO {
   roomTypeName: string;
   isAvailable: boolean;
   allowHourlyStay: boolean;
+  pricePerNight: number;
 }
 
 export interface AmenityDTO {
@@ -244,4 +245,23 @@ export interface TenantDTO {
   plan: string;
   isActive: boolean;
   createdAt: string;
+  currencyCode: string;   // ISO 4217
+  locale: string;         // IETF locale tag
+}
+
+export interface DefaultCurrencyDTO {
+  currencyCode: string;
+  locale: string;
+}
+
+// ── Booking Calendar (Phase 12) ───────────────────────────────────────────────
+
+export interface BookingCalendarEntry {
+  id: number;
+  roomId: number;
+  roomNumber: string;
+  customerName: string;   // denormalized — avoid complex object graph
+  checkInDate: string;    // 'yyyy-MM-dd'
+  checkOutDate: string;   // 'yyyy-MM-dd'
+  status: string;         // 'Pending' | 'Confirmed'
 }

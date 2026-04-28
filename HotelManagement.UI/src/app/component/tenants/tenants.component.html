@@ -167,6 +167,24 @@
             </mat-slide-toggle>
           </div>
 
+          <mat-form-field appearance="outline">
+            <mat-label>Locale &amp; Currency</mat-label>
+            <mat-icon matPrefix>language</mat-icon>
+            <mat-select formControlName="locale" (selectionChange)="onLocaleChange($event.value)">
+              @for (entry of localeCurrencyList; track entry.locale) {
+                <mat-option [value]="entry.locale">{{ entry.label }}</mat-option>
+              }
+            </mat-select>
+            <mat-hint>Currency is auto-filled from the selected locale</mat-hint>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Currency Code</mat-label>
+            <mat-icon matPrefix>currency_exchange</mat-icon>
+            <input matInput formControlName="currencyCode" placeholder="e.g. INR" maxlength="3" />
+            <mat-hint>ISO 4217 — auto-set from locale; override if needed</mat-hint>
+          </mat-form-field>
+
           <div class="form-actions">
             <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">
               <mat-icon>save</mat-icon> {{ editId() ? 'Update' : 'Create' }}

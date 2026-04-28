@@ -8,5 +8,7 @@ namespace HotelManagementSystem.Shared.DTOs
         public string Plan { get; set; }
         public bool IsActive { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string CurrencyCode { get; set; } = "INR";   // ISO 4217
+        public string Locale { get; set; } = "en-IN";       // IETF locale tag
     }
 }

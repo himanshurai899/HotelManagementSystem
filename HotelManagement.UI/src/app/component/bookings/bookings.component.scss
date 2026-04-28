@@ -1,3 +1,7 @@
 @use '../rooms/rooms.component.scss' as *;
 .empty { padding: 24px; text-align: center; color: #888; }
 .hourly-badge { font-size: 0.75rem; color: #1976d2; font-weight: 500; }
+.action-cell { white-space: nowrap; }
+.row-pending   { background: rgba(255, 193, 7, 0.06); }
+.row-confirmed { background: rgba(25, 118, 210, 0.04); }
+.row-cancelled { opacity: 0.55; }

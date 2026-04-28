@@ -39,6 +39,22 @@ namespace HotelManagementSystem.API.Controllers
             return Ok(_mapper.Map<TenantDTO>(tenant));
         }
 
+        // GET /api/tenants/default-currency  — public; returns the active default tenant's currency
+        [HttpGet("default-currency")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetDefaultCurrency()
+        {
+            var tenants = await _repo.GetAllAsync();
+            var defaultTenant = tenants.FirstOrDefault(t => t.IsActive) ?? tenants.FirstOrDefault();
+            if (defaultTenant == null)
+                return Ok(new DefaultCurrencyDTO { CurrencyCode = "INR", Locale = "en-IN" });
+            return Ok(new DefaultCurrencyDTO
+            {
+                CurrencyCode = defaultTenant.CurrencyCode ?? "INR",
+                Locale       = defaultTenant.Locale       ?? "en-IN"
+            });
+        }
+
         // POST /api/tenants
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] TenantDTO dto)

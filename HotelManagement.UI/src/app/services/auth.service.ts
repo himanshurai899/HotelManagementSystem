@@ -209,6 +209,20 @@ export class AuthService {
     return (payload[NAME_CLAIM_URI] as string) ?? '';
   }
 
+  // ── Tenant currency / locale ───────────────────────────────────────────────
+
+  /** Returns the ISO 4217 currency code from the JWT (e.g. "INR", "USD"). Empty string if not present. */
+  getCurrencyCode(): string {
+    const payload = this.getPayload();
+    return (payload?.['CurrencyCode'] as string) ?? '';
+  }
+
+  /** Returns the IETF locale tag from the JWT (e.g. "en-IN", "en-US"). Empty string if not present. */
+  getLocale(): string {
+    const payload = this.getPayload();
+    return (payload?.['Locale'] as string) ?? '';
+  }
+
   // ── Silent refresh prompt ─────────────────────────────────────────────────
 
   /**

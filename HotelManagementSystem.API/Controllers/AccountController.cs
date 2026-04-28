@@ -14,13 +14,14 @@ namespace HotelManagementSystem.API.Controllers
     [AllowAnonymous]
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, RoleManager<Role> roleManager, IRepository<UserTenant> userTenantRepo) : ControllerBase
+    public class AccountController(UserManager<User> userManager, SignInManager<User> signInManager, IConfiguration configuration, RoleManager<Role> roleManager, IRepository<UserTenant> userTenantRepo, IRepository<Tenant> tenantRepo) : ControllerBase
     {
         private readonly UserManager<User> _userManager = userManager;
         private readonly SignInManager<User> _signInManager = signInManager;
         private readonly IConfiguration _configuration = configuration;
         private readonly RoleManager<Role> _roleManager = roleManager;
         private readonly IRepository<UserTenant> _userTenantRepo = userTenantRepo;
+        private readonly IRepository<Tenant> _tenantRepo = tenantRepo;
 
         [HttpPost("Register")]
         public async Task<IActionResult> Register([FromBody] RegisterDTO model)
@@ -93,7 +94,15 @@ namespace HotelManagementSystem.API.Controllers
             };
 
             if (primaryTenant != null)
+            {
                 baseClaims.Add(new Claim("TenantId", primaryTenant.TenantId.ToString()));
+                var tenantEntity = await _tenantRepo.GetByIdAsync(primaryTenant.TenantId);
+                if (tenantEntity != null)
+                {
+                    baseClaims.Add(new Claim("CurrencyCode", tenantEntity.CurrencyCode ?? "INR"));
+                    baseClaims.Add(new Claim("Locale",       tenantEntity.Locale       ?? "en-IN"));
+                }
+            }
 
             var claims = baseClaims
             .Union(userClaims)

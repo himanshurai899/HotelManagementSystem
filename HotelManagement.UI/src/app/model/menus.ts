@@ -87,6 +87,14 @@ export const menus: Menu[] = [
         icon: 'book_online'
     },
     {
+        route: 'booking-calendar',
+        title: 'Booking Calendar',
+        description: 'Room availability calendar view',
+        category: 'Reservations',
+        requiredRoles: ['Administrator', 'SuperAdmin'],
+        icon: 'calendar_month'
+    },
+    {
         route: 'invoices',
         title: 'Invoices',
         description: 'View and manage invoices',

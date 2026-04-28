@@ -17,6 +17,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ApiService } from '../../services/api.service';
+import { TenantCurrencyService, LOCALE_CURRENCY_LIST } from '../../services/tenant-currency.service';
 import { TenantDTO, UserTenantDTO, UserDTO } from '../../model/api.models';
 import { UserFormDialogComponent, UserFormDialogResult } from '../shared/user-form-dialog/user-form-dialog.component';
 
@@ -54,12 +55,15 @@ export class TenantsComponent implements OnInit {
 
   displayedColumns = ['name', 'subdomain', 'plan', 'status', 'createdAt', 'actions'];
   readonly plans = ['Free', 'Pro', 'Enterprise'];
+  readonly localeCurrencyList = LOCALE_CURRENCY_LIST;
 
   form = this.fb.group({
-    name:      ['', Validators.required],
-    subdomain: ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
-    plan:      ['Free', Validators.required],
-    isActive:  [true]
+    name:         ['', Validators.required],
+    subdomain:    ['', [Validators.required, Validators.pattern(/^[a-z0-9-]+$/)]],
+    plan:         ['Free', Validators.required],
+    isActive:     [true],
+    locale:       ['en-IN', Validators.required],
+    currencyCode: ['INR',   Validators.required]
   });
 
   ngOnInit() {
@@ -154,11 +158,20 @@ export class TenantsComponent implements OnInit {
   openForm(item?: TenantDTO) {
     this.editId.set(item?.id ?? null);
     if (item) {
-      this.form.patchValue({ name: item.name, subdomain: item.subdomain, plan: item.plan, isActive: item.isActive });
+      this.form.patchValue({
+        name: item.name, subdomain: item.subdomain, plan: item.plan, isActive: item.isActive,
+        locale: item.locale ?? 'en-IN', currencyCode: item.currencyCode ?? 'INR'
+      });
     } else {
-      this.form.reset({ plan: 'Free', isActive: true });
+      this.form.reset({ plan: 'Free', isActive: true, locale: 'en-IN', currencyCode: 'INR' });
     }
     this.showForm.set(true);
+  }
+
+  /** When the locale dropdown changes, auto-fill the matching currency code. */
+  onLocaleChange(locale: string) {
+    const entry = this.localeCurrencyList.find(e => e.locale === locale);
+    if (entry) this.form.patchValue({ currencyCode: entry.currencyCode });
   }
 
   save() {

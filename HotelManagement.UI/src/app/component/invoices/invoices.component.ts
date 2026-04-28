@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,13 +12,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { InvoiceDTO } from '../../model/api.models';
 
 @Component({
   selector: 'app-invoices',
   standalone: true,
   imports: [
-    CommonModule,
+    CommonModule, CurrencyPipe, DatePipe,
     MatTableModule,
     MatCardModule,
     MatButtonModule,
@@ -36,6 +37,7 @@ export class InvoicesComponent implements OnInit {
   private readonly api  = inject(ApiService);
   private readonly auth = inject(AuthService);
   private readonly snack = inject(MatSnackBar);
+  readonly currencySvc = inject(TenantCurrencyService);
 
   readonly invoices = signal<InvoiceDTO[]>([]);
   readonly loading  = signal(true);

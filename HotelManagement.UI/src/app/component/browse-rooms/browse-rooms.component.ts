@@ -1,6 +1,7 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,13 +11,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ApiService } from '../../services/api.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { RoomDTO, RoomTypeDTO } from '../../model/api.models';
 
 @Component({
   selector: 'app-browse-rooms',
   standalone: true,
   imports: [
-    RouterLink, FormsModule, MatCardModule, MatButtonModule, MatIconModule,
+    RouterLink, FormsModule, CurrencyPipe, MatCardModule, MatButtonModule, MatIconModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatChipsModule, MatProgressSpinnerModule
   ],
   templateUrl: './browse-rooms.component.html',
@@ -24,6 +26,7 @@ import { RoomDTO, RoomTypeDTO } from '../../model/api.models';
 })
 export class BrowseRoomsComponent implements OnInit {
   private api = inject(ApiService);
+  readonly currencySvc = inject(TenantCurrencyService);
 
   allRooms = signal<RoomDTO[]>([]);
   rooms = signal<RoomDTO[]>([]);

@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { DatePipe, DecimalPipe } from '@angular/common';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,13 +15,14 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ApiService } from '../../services/api.service';
 import { AuthService } from '../../services/auth.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { BookingDTO, RoomDTO, BOOKING_STATUS_LABELS } from '../../model/api.models';
 
 @Component({
   selector: 'app-bookings',
   standalone: true,
   imports: [
-    ReactiveFormsModule, DatePipe, DecimalPipe, MatTableModule, MatButtonModule, MatIconModule,
+    ReactiveFormsModule, DatePipe, CurrencyPipe, MatTableModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatChipsModule, MatProgressSpinnerModule, MatSnackBarModule,
     MatDatepickerModule, MatNativeDateModule
@@ -34,6 +35,7 @@ export class BookingsComponent implements OnInit {
   private auth = inject(AuthService);
   private fb = inject(FormBuilder);
   private snack = inject(MatSnackBar);
+  readonly currencySvc = inject(TenantCurrencyService);
 
   isAdmin = this.auth.hasRole('Administrator') || this.auth.hasRole('SuperAdmin');
   /**
@@ -43,12 +45,16 @@ export class BookingsComponent implements OnInit {
    * Customers can always cancel their own bookings (server enforces ownership).
    */
   canModify = !this.isAdmin || this.auth.hasClaim('Permission', 'ManageBookings');
+  /** Approve/Reject require both Admin role AND ManageBookings policy */
+  canApprove = this.isAdmin && this.auth.hasClaim('Permission', 'ManageBookings');
   bookings = signal<BookingDTO[]>([]);
   rooms = signal<RoomDTO[]>([]);
   loading = signal(true);
   showForm = signal(false);
   statusLabels = BOOKING_STATUS_LABELS;
-  displayedColumns = ['roomNumber', 'checkIn', 'checkOut', 'total', 'status', 'actions'];
+  displayedColumns = this.isAdmin
+    ? ['roomNumber', 'customer', 'checkIn', 'checkOut', 'total', 'status', 'actions']
+    : ['roomNumber', 'checkIn', 'checkOut', 'total', 'status', 'actions'];
 
   /** Minimum selectable check-in date — today (no past dates) */
   readonly minCheckInDate = new Date();
@@ -71,7 +77,7 @@ export class BookingsComponent implements OnInit {
       next: d => {
         this.rooms.set(d.filter(r => r.isAvailable));
         // Set initial default check-in to next full hour
-        this.form.patchValue({ checkInDate: this._nextHour() });
+        this.form.patchValue({ checkInDate: this._defaultCheckIn() });
       }
     });
 
@@ -92,11 +98,11 @@ export class BookingsComponent implements OnInit {
     });
   }
 
-  /** Returns the next full hour from now as a Date */
-  private _nextHour(): Date {
+  /** Returns today at 11:00 AM as the default check-in date (tomorrow if already past 11 PM) */
+  private _defaultCheckIn(): Date {
     const d = new Date();
-    d.setMinutes(0, 0, 0);
-    d.setHours(d.getHours() + 1);
+    if (d.getHours() >= 23) { d.setDate(d.getDate() + 1); }
+    d.setHours(11, 0, 0, 0);
     return d;
   }
 
@@ -148,7 +154,9 @@ export class BookingsComponent implements OnInit {
     if (this.form.invalid) return;
     const val = this.form.value;
     const checkIn = val.checkInDate ? new Date(val.checkInDate) : null;
+    if (checkIn) checkIn.setHours(11, 0, 0, 0);   // 11:00 AM default check-in
     const checkOut = val.checkOutDate ? new Date(val.checkOutDate) : null;
+    if (checkOut) checkOut.setHours(10, 0, 0, 0);  // 10:00 AM default check-out
     this.api.post<BookingDTO>('bookings', {
       id: 0,
       status: 0,
@@ -176,5 +184,22 @@ export class BookingsComponent implements OnInit {
     });
   }
 
+  approve(id: number) {
+    if (!confirm('Approve this booking? The room will be blocked for these dates.')) return;
+    this.api.put(`bookings/${id}/approve`, {}).subscribe({
+      next: () => { this.snack.open('Booking approved ✓', '', { duration: 2000 }); this.loadBookings(); },
+      error: (err) => this.snack.open(err?.error?.message ?? 'Approval failed.', 'Dismiss', { duration: 3000 })
+    });
+  }
+
+  reject(id: number) {
+    if (!confirm('Reject this booking? The customer will be notified.')) return;
+    this.api.put(`bookings/${id}/reject`, {}).subscribe({
+      next: () => { this.snack.open('Booking rejected.', '', { duration: 2000 }); this.loadBookings(); },
+      error: (err) => this.snack.open(err?.error?.message ?? 'Rejection failed.', 'Dismiss', { duration: 3000 })
+    });
+  }
+
+  // 0=Pending(warn), 1=Confirmed(primary), 2=Cancelled(no color), 3=Completed(accent)
   getStatusColor(s: number) { return ['warn', 'primary', '', 'accent'][s] ?? ''; }
 }

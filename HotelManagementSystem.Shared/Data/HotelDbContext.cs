@@ -196,6 +196,10 @@ namespace HotelManagementSystem.Shared.Data
                 .Property(rt => rt.BasePrice)
                 .HasColumnType("decimal(18,2)");
 
+            modelBuilder.Entity<Room>()
+                .Property(r => r.PricePerNight)
+                .HasColumnType("decimal(18,2)");
+
             // Configure foreign key with no action on delete
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Role)
@@ -290,7 +294,9 @@ namespace HotelManagementSystem.Shared.Data
                 Subdomain = "default",
                 Plan = TenantPlan.Enterprise,
                 IsActive = true,
-                CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
+                CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                CurrencyCode = "INR",
+                Locale = "en-IN"
             });
 
             // Assign all existing seeded users to DefaultTenant
