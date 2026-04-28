@@ -12,13 +12,15 @@ namespace HotelManagementSystem.API.Controllers
     [ApiController]
     [Route("api/[controller]")]
     public class BookingsController(
-        IRepository<Booking> repo,
-        IRepository<Room> roomRepo,
-        IMapper mapper) : ControllerBase
+        IRepository<Booking>   repo,
+        IRepository<Room>      roomRepo,
+        IMapper                mapper,
+        IRepository<RoomBlock> blockRepo = null!) : ControllerBase
     {
-        private readonly IRepository<Booking> _repo = repo;
-        private readonly IRepository<Room> _roomRepo = roomRepo;
-        private readonly IMapper _mapper = mapper;
+        private readonly IRepository<Booking>   _repo      = repo;
+        private readonly IRepository<Room>      _roomRepo  = roomRepo;
+        private readonly IMapper                _mapper    = mapper;
+        private readonly IRepository<RoomBlock> _blockRepo = blockRepo;
 
         // GET api/bookings  — Admin/SuperAdmin sees all
         [HttpGet]
@@ -216,10 +218,25 @@ namespace HotelManagementSystem.API.Controllers
                     b.Status != BookingStatus.Cancelled
                     && b.BookingRooms != null
                     && b.BookingRooms.Any(br => br.RoomId == roomId)
-                    && b.CheckInDate < booking.CheckOutDate
-                    && b.CheckOutDate > booking.CheckInDate);
+                    && b.CheckInDate < dto.CheckOutDate
+                    && b.CheckOutDate > dto.CheckInDate);
                 if (conflict)
                     return Conflict(new { message = $"Room {roomId} is already booked for the selected dates." });
+            }
+
+            // 5) Room-block guard — reject if any requested room is administratively blocked.
+            if (_blockRepo != null)
+            {
+                var blocks = await _blockRepo.GetAllAsync();
+                foreach (var roomId in requestedRoomIds)
+                {
+                    var blocked = blocks.Any(bl =>
+                        bl.RoomId    == roomId
+                        && bl.StartDate < dto.CheckOutDate
+                        && bl.EndDate   > dto.CheckInDate);
+                    if (blocked)
+                        return Conflict(new { message = $"Room {roomId} is blocked for the selected dates and cannot be booked." });
+                }
             }
 
             await _repo.AddAsync(booking);

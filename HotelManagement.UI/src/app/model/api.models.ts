@@ -286,6 +286,35 @@ export interface DefaultCurrencyDTO {
   locale: string;
 }
 
+// ── Room Blocking (Phase 12d) ─────────────────────────────────────────────────
+
+/** Mirrors RoomBlockType enum from Shared/Enums/RoomBlockType.cs */
+export const RoomBlockType = {
+  Maintenance:    0,
+  Renovation:     1,
+  VIPHold:        2,
+  Administrative: 3
+} as const;
+export type RoomBlockType = typeof RoomBlockType[keyof typeof RoomBlockType];
+
+export const ROOM_BLOCK_TYPE_LABELS: Record<number, string> = {
+  [RoomBlockType.Maintenance]:    'Maintenance',
+  [RoomBlockType.Renovation]:     'Renovation',
+  [RoomBlockType.VIPHold]:        'VIP Hold',
+  [RoomBlockType.Administrative]: 'Administrative'
+};
+
+export interface RoomBlockDTO {
+  id: number;
+  roomId: number;
+  roomNumber: string;   // denormalized — avoid complex object graph
+  startDate: string;    // 'yyyy-MM-dd'
+  endDate: string;      // 'yyyy-MM-dd'
+  reason: string;
+  blockType: RoomBlockType;
+  createdAt: string;
+}
+
 // ── Booking Calendar (Phase 12) ───────────────────────────────────────────────
 
 export interface BookingCalendarEntry {

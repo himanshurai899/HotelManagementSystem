@@ -38,6 +38,12 @@ namespace HotelManagementSystem.API.Profiles
                 .ReverseMap()
                 .ForMember(dest => dest.Room,    opt => opt.Ignore())
                 .ForMember(dest => dest.Booking, opt => opt.Ignore());
+            // Phase 12d — RoomBlock
+            CreateMap<RoomBlock, RoomBlockDTO>()
+                .ForMember(dest => dest.RoomNumber,
+                    opt => opt.MapFrom(src => src.Room != null ? src.Room.RoomNumber : string.Empty))
+                .ReverseMap()
+                .ForMember(dest => dest.Room, opt => opt.Ignore());
 
             CreateMap<Booking, BookingDTO>()
                 .ForMember(dest => dest.UserName,

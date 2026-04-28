@@ -22,6 +22,7 @@ namespace HotelManagementSystem.Shared.Data
             Tenants = Set<Tenant>();
             UserTenants = Set<UserTenant>();
             BookingRooms = Set<BookingRoom>();
+            RoomBlocks   = Set<RoomBlock>();
         }
         public DbSet<Room> Rooms { get; set; }
         public DbSet<RoomType> RoomTypes { get; set; }
@@ -35,6 +36,7 @@ namespace HotelManagementSystem.Shared.Data
         public DbSet<Tenant> Tenants { get; set; }
         public DbSet<UserTenant> UserTenants { get; set; }
         public DbSet<BookingRoom> BookingRooms { get; set; }
+        public DbSet<RoomBlock>   RoomBlocks   { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

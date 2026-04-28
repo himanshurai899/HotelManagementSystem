@@ -95,6 +95,14 @@ export const menus: Menu[] = [
         icon: 'calendar_month'
     },
     {
+        route: 'room-blocks',
+        title: 'Room Blocks',
+        description: 'Block rooms for maintenance, renovation or holds',
+        category: 'Reservations',
+        requiredRoles: ['Administrator', 'SuperAdmin'],
+        icon: 'block'
+    },
+    {
         route: 'invoices',
         title: 'Invoices',
         description: 'View and manage invoices',

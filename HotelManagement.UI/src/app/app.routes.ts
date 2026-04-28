@@ -21,6 +21,7 @@ import { PaymentsComponent } from './component/payments/payments.component';
 import { CompanyProfileComponent } from './component/company-profile/company-profile.component';
 import { TenantsComponent } from './component/tenants/tenants.component';
 import { BookingCalendarComponent } from './component/booking-calendar/booking-calendar.component';
+import { RoomBlocksComponent } from './component/room-blocks/room-blocks.component';
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 
@@ -69,6 +70,10 @@ export const routes: Routes = [
 
   // Booking Calendar — Admin/SuperAdmin room availability view
   { path: 'booking-calendar', component: BookingCalendarComponent,
+    canActivate: [authGuard, roleGuard], data: { roles: ['Administrator', 'SuperAdmin'] } },
+
+  // Room Blocking — Admin/SuperAdmin (Phase 12d)
+  { path: 'room-blocks', component: RoomBlocksComponent,
     canActivate: [authGuard, roleGuard], data: { roles: ['Administrator', 'SuperAdmin'] } },
 
   // Billing & Payments (Phase 8)
