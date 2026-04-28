@@ -15,6 +15,8 @@ export interface RoomDTO {
   roomTypeId: number;
   roomTypeName: string;
   isAvailable: boolean;
+  allowHourlyStay: boolean;
+  pricePerNight: number;
 }
 
 export interface AmenityDTO {
@@ -52,6 +54,18 @@ export interface ClaimDTO {
   value: string;
 }
 
+export interface UserTenantDTO {
+  userId: number;
+  userName: string;       // denormalized — avoid complex object graph
+  firstName: string;      // denormalized — avoid complex object graph
+  lastName: string;       // denormalized — avoid complex object graph
+  email: string;          // denormalized — avoid complex object graph
+  tenantId: number;
+  tenantName: string;     // denormalized — avoid complex object graph
+  tenantRole: string | null;
+  joinedAt: string;
+}
+
 export interface RoleDTO {
   id: number;
   name: string;
@@ -70,6 +84,7 @@ export interface UserDTO {
   roleName: string;
   roles: string[];
   claims: ClaimDTO[];
+  tenants?: UserTenantDTO[];
 }
 
 export interface PermissionDTO {
@@ -85,6 +100,7 @@ export interface CreateUserRequest {
   phoneNumber: string;
   password: string;
   roles: string[];
+  claims: ClaimDTO[];
   idProofType?: string | null;
   idProofNumber?: string | null;
 }
@@ -219,4 +235,33 @@ export interface CompanyProfileDTO {
   primaryColor: string | null;
   accentColor: string | null;
   fontFamily: string | null;
+}
+// ── Tenants (Phase 9) ────────────────────────────────────────────────────────────
+
+export interface TenantDTO {
+  id: number;
+  name: string;
+  subdomain: string;
+  plan: string;
+  isActive: boolean;
+  createdAt: string;
+  currencyCode: string;   // ISO 4217
+  locale: string;         // IETF locale tag
+}
+
+export interface DefaultCurrencyDTO {
+  currencyCode: string;
+  locale: string;
+}
+
+// ── Booking Calendar (Phase 12) ───────────────────────────────────────────────
+
+export interface BookingCalendarEntry {
+  id: number;
+  roomId: number;
+  roomNumber: string;
+  customerName: string;   // denormalized — avoid complex object graph
+  checkInDate: string;    // 'yyyy-MM-dd'
+  checkOutDate: string;   // 'yyyy-MM-dd'
+  status: string;         // 'Pending' | 'Confirmed'
 }

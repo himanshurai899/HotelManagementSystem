@@ -1,0 +1,84 @@
+<div class="cal-page">
+
+  <!-- ── Navigation header ── -->
+  <div class="cal-nav">
+    <button mat-icon-button (click)="prevMonth()" aria-label="Previous month">
+      <mat-icon>chevron_left</mat-icon>
+    </button>
+
+    <div class="cal-title">
+      <mat-icon class="cal-title-icon">calendar_month</mat-icon>
+      <span>{{ monthLabel() }}</span>
+    </div>
+
+    <button mat-icon-button (click)="nextMonth()" aria-label="Next month">
+      <mat-icon>chevron_right</mat-icon>
+    </button>
+
+    <button mat-stroked-button class="today-btn" (click)="goToday()">Today</button>
+  </div>
+
+  <!-- ── Legend ── -->
+  <div class="cal-legend">
+    <span><span class="legend-dot dot-enquiry"></span>Enquiry</span>
+    <span><span class="legend-dot dot-pending"></span>Pending</span>
+    <span><span class="legend-dot dot-confirmed"></span>Confirmed</span>
+  </div>
+
+  <!-- ── Spinner ── -->
+  @if (loading()) {
+    <div class="cal-loading"><mat-spinner diameter="44"></mat-spinner></div>
+  }
+
+  <!-- ── Calendar grid ── -->
+  @if (!loading()) {
+    <div class="cal-grid-wrapper">
+
+      <div class="cal-grid">
+
+        <!-- Day-of-week header row -->
+        @for (wd of weekDays; track wd) {
+          <div class="cal-dow" [class.dow-weekend]="wd === 'Sun' || wd === 'Sat'">{{ wd }}</div>
+        }
+
+        <!-- Week rows -->
+        @for (week of calendarWeeks(); track $index) {
+          @for (cell of week; track $index) {
+
+            <!-- Padding cell -->
+            @if (!cell.date) {
+              <div class="cal-cell cal-cell--pad"></div>
+            }
+
+            <!-- Real date cell -->
+            @if (cell.date) {
+              <div class="cal-cell" [class.cal-cell--today]="isToday(cell.date)">
+
+                <div class="cell-date-num" [class.today-circle]="isToday(cell.date)">
+                  {{ cell.dayNum }}
+                </div>
+
+                <div class="cell-bookings">
+                  @for (b of cell.bookings; track b.id) {
+                    <div class="booking-chip"
+                         [ngClass]="statusClass(b.status)"
+                         [matTooltip]="tooltip(b)"
+                         matTooltipClass="cal-tooltip">
+                      <span class="chip-room">Rm {{ b.roomNumber }}</span>
+                      <span class="chip-customer">{{ b.customerName }}</span>
+                    </div>
+                  }
+                </div>
+
+              </div>
+            }
+
+          }
+        }
+
+      </div>
+
+    </div>
+  }
+
+</div>

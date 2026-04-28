@@ -13,6 +13,14 @@
   @if (!loading()) {
     <mat-card>
       <table mat-table [dataSource]="bookings()" class="full-width">
+
+        @if (isAdmin) {
+          <ng-container matColumnDef="customer">
+            <th mat-header-cell *matHeaderCellDef>Customer</th>
+            <td mat-cell *matCellDef="let b">{{ b.userName }}</td>
+          </ng-container>
+        }
+
         <ng-container matColumnDef="roomNumber">
           <th mat-header-cell *matHeaderCellDef>Room</th>
           <td mat-cell *matCellDef="let b">{{ b.roomNumber }}</td>
@@ -27,7 +35,9 @@
         </ng-container>
         <ng-container matColumnDef="total">
           <th mat-header-cell *matHeaderCellDef>Total</th>
-          <td mat-cell *matCellDef="let b">${{ b.totalPrice | number:'1.2-2' }}</td>
+          <td mat-cell *matCellDef="let b">
+            {{ b.totalPrice | currency:currencySvc.currencyCode():'symbol':'1.2-2':currencySvc.locale() }}
+          </td>
         </ng-container>
         <ng-container matColumnDef="status">
           <th mat-header-cell *matHeaderCellDef>Status</th>
@@ -37,18 +47,28 @@
         </ng-container>
         <ng-container matColumnDef="actions">
           <th mat-header-cell *matHeaderCellDef>Actions</th>
-          <td mat-cell *matCellDef="let b">
-            @if (canModify) {
+          <td mat-cell *matCellDef="let b" class="action-cell">
+            @if (isAdmin && canApprove && b.status === 0) {
+              <button mat-icon-button color="primary" (click)="approve(b.id)" title="Approve booking">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="reject(b.id)" title="Reject booking">
+                <mat-icon>cancel</mat-icon>
+              </button>
+            } @else if (!isAdmin && b.status !== 2) {
               <button mat-icon-button color="warn" (click)="cancel(b.id)" title="Cancel">
                 <mat-icon>cancel</mat-icon>
               </button>
-            } @else {
+            } @else if (isAdmin && !canApprove) {
               <span class="muted" title="Requires ManageBookings permission">—</span>
             }
           </td>
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            [class.row-pending]="row.status === 0"
+            [class.row-confirmed]="row.status === 1"
+            [class.row-cancelled]="row.status === 2"></tr>
       </table>
       @if (bookings().length === 0) {
         <div class="empty">No bookings found.</div>
@@ -65,20 +85,45 @@
             <mat-label>Room</mat-label>
             <mat-select formControlName="roomId">
               @for (r of rooms(); track r.id) {
-                <mat-option [value]="r.id">Room {{ r.roomNumber }} — {{ r.roomTypeName }}</mat-option>
+                <mat-option [value]="r.id">
+                  Room {{ r.roomNumber }} — {{ r.roomTypeName }}
+                  @if (r.allowHourlyStay) { <span class="hourly-badge"> (Hourly)</span> }
+                </mat-option>
               }
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Check In</mat-label>
-            <input matInput type="date" formControlName="checkInDate" />
+            <input matInput [matDatepicker]="checkInPicker" formControlName="checkInDate"
+                   [min]="minCheckInDate" placeholder="MM/DD/YYYY" readonly />
+            <mat-datepicker-toggle matIconSuffix [for]="checkInPicker"></mat-datepicker-toggle>
+            <mat-datepicker #checkInPicker></mat-datepicker>
+            <mat-hint>Starts from today · time set to next hour</mat-hint>
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>Check Out</mat-label>
-            <input matInput type="date" formControlName="checkOutDate" />
+            <input matInput [matDatepicker]="checkOutPicker" formControlName="checkOutDate"
+                   [min]="minCheckOutDate()" placeholder="MM/DD/YYYY" readonly />
+            <mat-datepicker-toggle matIconSuffix [for]="checkOutPicker"></mat-datepicker-toggle>
+            <mat-datepicker #checkOutPicker></mat-datepicker>
+            @if (selectedRoomIsHourly) {
+              <mat-hint>Same-day checkout allowed (hourly room)</mat-hint>
+            } @else {
+              <mat-hint>Must be at least the day after check-in</mat-hint>
+            }
           </mat-form-field>
+          @if (dateConflictMessage()) {
+            <div class="conflict-alert">
+              <mat-icon>event_busy</mat-icon>
+              <span>{{ dateConflictMessage() }}</span>
+            </div>
+          }
           <div class="form-actions">
-            <button mat-raised-button color="primary" type="submit" [disabled]="form.invalid">Book</button>
+            <span [matTooltip]="dateConflictMessage() ?? (form.invalid ? 'Please fill all required fields.' : '')"
+                  [matTooltipDisabled]="form.valid && !dateConflictMessage()">
+              <button mat-raised-button color="primary" type="submit"
+                      [disabled]="form.invalid || !!dateConflictMessage()">Book</button>
+            </span>
             <button mat-button type="button" (click)="showForm.set(false)">Cancel</button>
           </div>
         </form>

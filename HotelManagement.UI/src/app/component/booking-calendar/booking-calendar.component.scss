@@ -1,0 +1,211 @@
+// ── Page shell ──────────────────────────────────────────────────────────────
+.cal-page {
+  padding: 20px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+// ── Navigation ───────────────────────────────────────────────────────────────
+.cal-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.cal-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  flex: 1;
+  color: #212121;
+}
+
+.cal-title-icon {
+  color: #1976d2;
+  font-size: 1.4rem;
+  height: 1.4rem;
+  width: 1.4rem;
+}
+
+.today-btn {
+  margin-left: 8px;
+  height: 30px;
+  line-height: 30px;
+  font-size: 0.78rem;
+}
+
+// ── Legend ───────────────────────────────────────────────────────────────────
+.cal-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 0.8rem;
+  color: #555;
+  margin-bottom: 14px;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+}
+
+.legend-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+.dot-enquiry   { background: #bbdefb; border-left: 3px solid #1976d2; }
+.dot-pending   { background: #fff9c4; border-left: 3px solid #f9a825; }
+.dot-confirmed { background: #c8e6c9; border-left: 3px solid #388e3c; }
+
+// ── Loading ───────────────────────────────────────────────────────────────────
+.cal-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
+// ── Grid wrapper ─────────────────────────────────────────────────────────────
+.cal-grid-wrapper {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+// ── 7-column CSS grid ────────────────────────────────────────────────────────
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+// ── Day-of-week headers ──────────────────────────────────────────────────────
+.cal-dow {
+  background: #1976d2;
+  color: #fff;
+  text-align: center;
+  padding: 10px 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+
+  &:last-child {
+    border-right: none;
+  }
+}
+
+.dow-weekend {
+  background: #1565c0;
+}
+
+// ── Date cells ───────────────────────────────────────────────────────────────
+.cal-cell {
+  min-height: 110px;
+  padding: 6px 7px 8px;
+  border-right: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0;
+  vertical-align: top;
+  background: #fafafa;
+  transition: background 0.12s;
+
+  &:nth-child(7n) {
+    border-right: none;
+  }
+
+  &--pad {
+    min-height: 110px;
+    background: #f3f3f3;
+  }
+
+  &--today {
+    background: #e3f2fd;
+  }
+}
+
+// ── Date number ──────────────────────────────────────────────────────────────
+.cell-date-num {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #424242;
+  margin-bottom: 4px;
+  line-height: 1;
+}
+
+.today-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #1976d2;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+// ── Booking chips ────────────────────────────────────────────────────────────
+.cell-bookings {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.booking-chip {
+  display: flex;
+  flex-direction: column;
+  padding: 3px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  line-height: 1.3;
+  cursor: default;
+  overflow: hidden;
+
+  &.chip-enquiry {
+    background: #bbdefb;
+    color: #0d47a1;
+    border-left: 3px solid #1976d2;
+  }
+
+  &.chip-pending {
+    background: #fff9c4;
+    color: #e65100;
+    border-left: 3px solid #f9a825;
+  }
+
+  &.chip-confirmed {
+    background: #c8e6c9;
+    color: #1b5e20;
+    border-left: 3px solid #388e3c;
+  }
+}
+
+.chip-room {
+  font-weight: 700;
+  font-size: 0.72rem;
+}
+
+.chip-customer {
+  font-size: 0.67rem;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// ── Tooltip ──────────────────────────────────────────────────────────────────
+::ng-deep .cal-tooltip {
+  white-space: pre-line;
+  font-size: 0.75rem;
+  line-height: 1.5;
+}

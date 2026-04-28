@@ -15,5 +15,7 @@ namespace HotelManagementSystem.Shared.Models
         public decimal TotalPrice { get; set; }
         public BookingStatus Status { get; set; }
         public ICollection<Payment> Payments { get; set; }
+        public int TenantId { get; set; }
+        public Tenant Tenant { get; set; }
     }
 }

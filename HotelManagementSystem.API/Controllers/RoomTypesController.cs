@@ -32,6 +32,11 @@ namespace HotelManagementSystem.API.Controllers
         public async Task<IActionResult> Create([FromBody] RoomTypeDTO dto)
         {
             var roomType = mapper.Map<RoomType>(dto);
+            roomType.Tenant = null!;
+            if (HttpContext.Items.TryGetValue("TenantId", out var tid) && tid is int tenantId)
+            {
+                roomType.TenantId = tenantId;
+            }
             await repo.AddAsync(roomType);
             return CreatedAtAction(nameof(GetById), new { id = roomType.Id }, mapper.Map<RoomTypeDTO>(roomType));
         }

@@ -24,5 +24,6 @@ namespace HotelManagementSystem.Shared.Models
         public ICollection<Booking> Bookings { get; set; }
         public int RoleId { get; set; }
         public Role Role { get; set; }
+        public ICollection<UserTenant> UserTenants { get; set; } = new List<UserTenant>();
     }
 }

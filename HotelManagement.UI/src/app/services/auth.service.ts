@@ -41,6 +41,19 @@ export class AuthService {
   );
   readonly fullName = this._fullName.asReadonly();
 
+  /**
+   * SuperAdmin-only: the tenant currently being managed.
+   * When set, every API request will carry `X-Tenant-Id: <id>` so the server
+   * scopes all reads/writes to the chosen tenant.
+   * Stored in sessionStorage (not localStorage) so it resets on tab close.
+   */
+  private readonly _selectedTenantId = signal<number | null>(
+    typeof sessionStorage !== 'undefined'
+      ? (sessionStorage.getItem('hotel_selected_tenant') ? Number(sessionStorage.getItem('hotel_selected_tenant')) : null)
+      : null
+  );
+  readonly selectedTenantId = this._selectedTenantId.asReadonly();
+
   // ── Constructor ───────────────────────────────────────────────────────────
 
   constructor(private router: Router) {
@@ -71,9 +84,11 @@ export class AuthService {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem('hotel_profile_photo');
     localStorage.removeItem(FULL_NAME_KEY);
+    sessionStorage.removeItem('hotel_selected_tenant');
     this._token.set(null);
     this._profilePhotoUrl.set(null);
     this._fullName.set(null);
+    this._selectedTenantId.set(null);
     this._showRefreshPrompt.set(false);
     if (this.refreshTimer) {
       clearTimeout(this.refreshTimer);
@@ -94,6 +109,16 @@ export class AuthService {
     else      localStorage.removeItem(FULL_NAME_KEY);
     this._fullName.set(name);
   }
+
+  /** SuperAdmin: set the active tenant being managed. Persisted in sessionStorage. */
+  setSelectedTenant(tenantId: number | null): void {
+    if (tenantId) sessionStorage.setItem('hotel_selected_tenant', String(tenantId));
+    else          sessionStorage.removeItem('hotel_selected_tenant');
+    this._selectedTenantId.set(tenantId);
+  }
+
+  /** Clears the active tenant selection (e.g. SuperAdmin returns to global view). */
+  clearSelectedTenant(): void { this.setSelectedTenant(null); }
 
   /** Returns the persisted full name, falling back to username from JWT. */
   getFullName(): string {
@@ -207,6 +232,20 @@ export class AuthService {
     const payload = this.getPayload();
     if (!payload) return '';
     return (payload[NAME_CLAIM_URI] as string) ?? '';
+  }
+
+  // ── Tenant currency / locale ───────────────────────────────────────────────
+
+  /** Returns the ISO 4217 currency code from the JWT (e.g. "INR", "USD"). Empty string if not present. */
+  getCurrencyCode(): string {
+    const payload = this.getPayload();
+    return (payload?.['CurrencyCode'] as string) ?? '';
+  }
+
+  /** Returns the IETF locale tag from the JWT (e.g. "en-IN", "en-US"). Empty string if not present. */
+  getLocale(): string {
+    const payload = this.getPayload();
+    return (payload?.['Locale'] as string) ?? '';
   }
 
   // ── Silent refresh prompt ─────────────────────────────────────────────────

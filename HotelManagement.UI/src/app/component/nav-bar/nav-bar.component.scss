@@ -60,6 +60,14 @@
   display: flex;
   align-items: center;
   gap: 4px;
+  .user-btn-label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.15;
+    .user-btn-name { font-size: 0.875rem; font-weight: 500; }
+    .user-btn-role { font-size: 0.7rem; opacity: 0.75; text-transform: capitalize; }
+  }
 }
 
 .refresh-banner {
@@ -72,4 +80,45 @@
   font-size: 0.9rem;
   border-bottom: 1px solid #ffcc80;
   mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+.tenant-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 5px 16px;
+  font-size: 0.875rem;
+  border-bottom: 1px solid #a5d6a7;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+  button { margin-left: auto; color: #2e7d32; }
+}
+
+// SuperAdmin tenant switcher — lives inside the primary toolbar
+.tenant-switcher {
+  width: 185px;
+  margin-right: 8px;
+  // Subscript (hint/error row) wastes space — hide it
+  .mat-mdc-form-field-subscript-wrapper { display: none; }
+  // Tighten height to fit the toolbar
+  .mat-mdc-text-field-wrapper { padding-top: 0; padding-bottom: 0; }
+
+  // White-on-primary colour overrides via CSS custom properties
+  --mdc-outlined-text-field-outline-color:            rgba(255,255,255,0.45);
+  --mdc-outlined-text-field-hover-outline-color:      rgba(255,255,255,0.85);
+  --mdc-outlined-text-field-focus-outline-color:      #fff;
+  --mdc-outlined-text-field-label-text-color:         rgba(255,255,255,0.75);
+  --mdc-outlined-text-field-focus-label-text-color:   #fff;
+  --mdc-outlined-text-field-input-text-color:         #fff;
+  --mat-select-trigger-text-color:                    #fff;
+  --mat-select-arrow-foreground-color:                rgba(255,255,255,0.7);
+
+  .label-icon {
+    font-size: 15px;
+    width: 15px;
+    height: 15px;
+    vertical-align: middle;
+    margin-right: 2px;
+  }
 }

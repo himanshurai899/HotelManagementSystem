@@ -8,5 +8,7 @@
         public decimal BasePrice { get; set; }
         public int Capacity { get; set; }
         public ICollection<Room> Rooms { get; set; }
+        public int TenantId { get; set; }
+        public Tenant Tenant { get; set; }
     }
 }

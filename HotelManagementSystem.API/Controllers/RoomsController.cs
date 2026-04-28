@@ -18,7 +18,7 @@ namespace HotelManagementSystem.API.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<RoomDTO>>> GetRooms()
         {
-            var rooms = await _roomRepository.GetAllAsync();
+            var rooms = await _roomRepository.GetAllWithIncludesAsync(r => r.RoomType);
             return Ok(_mapper.Map<IEnumerable<RoomDTO>>(rooms));
         }
 
@@ -26,7 +26,7 @@ namespace HotelManagementSystem.API.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<RoomDTO>> GetRoom(int id)
         {
-            var room = await _roomRepository.GetByIdAsync(id);
+            var room = await _roomRepository.GetByIdWithIncludesAsync(id, r => r.RoomType);
             if (room == null) return NotFound();
             return Ok(_mapper.Map<RoomDTO>(room));
         }
@@ -37,6 +37,12 @@ namespace HotelManagementSystem.API.Controllers
         public async Task<ActionResult<RoomDTO>> CreateRoom([FromBody] RoomDTO dto)
         {
             var room = _mapper.Map<Room>(dto);
+            room.RoomType = null!;
+            room.Tenant = null!;
+            if (HttpContext.Items.TryGetValue("TenantId", out var tid) && tid is int tenantId)
+            {
+                room.TenantId = tenantId;
+            }
             await _roomRepository.AddAsync(room);
             return CreatedAtAction(nameof(GetRoom), new { id = room.Id }, _mapper.Map<RoomDTO>(room));
         }
@@ -47,7 +53,20 @@ namespace HotelManagementSystem.API.Controllers
         public async Task<IActionResult> UpdateRoom(int id, [FromBody] RoomDTO dto)
         {
             if (id != dto.Id) return BadRequest();
-            var room = _mapper.Map<Room>(dto);
+
+            // Fetch the existing tracked entity so EF does not attempt to INSERT
+            // any navigation objects (Tenant, RoomType) that AutoMapper would produce
+            // on a fresh mapping from a flat DTO.
+            var room = await _roomRepository.GetByIdAsync(id);
+            if (room is null) return NotFound();
+
+            // Map scalar fields from the DTO onto the already-tracked entity.
+            // Navigation properties are left as-is on the tracked object.
+            _mapper.Map(dto, room);
+
+            // Never let the DTO overwrite TenantId — it is set on creation and is immutable.
+            // (dto.TenantId may be 0 or stale; leave what is already in the database.)
+
             await _roomRepository.UpdateAsync(room);
             return NoContent();
         }

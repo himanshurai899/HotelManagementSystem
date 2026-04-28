@@ -19,6 +19,8 @@ import { ProfileComponent } from './component/profile/profile.component';
 import { InvoicesComponent } from './component/invoices/invoices.component';
 import { PaymentsComponent } from './component/payments/payments.component';
 import { CompanyProfileComponent } from './component/company-profile/company-profile.component';
+import { TenantsComponent } from './component/tenants/tenants.component';
+import { BookingCalendarComponent } from './component/booking-calendar/booking-calendar.component';
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 
@@ -65,6 +67,10 @@ export const routes: Routes = [
   { path: 'bookings', component: BookingsComponent,
     canActivate: [authGuard, roleGuard], data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] } },
 
+  // Booking Calendar — Admin/SuperAdmin room availability view
+  { path: 'booking-calendar', component: BookingCalendarComponent,
+    canActivate: [authGuard, roleGuard], data: { roles: ['Administrator', 'SuperAdmin'] } },
+
   // Billing & Payments (Phase 8)
   { path: 'invoices', component: InvoicesComponent,
     canActivate: [authGuard, roleGuard], data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] } },
@@ -72,6 +78,10 @@ export const routes: Routes = [
     canActivate: [authGuard, roleGuard], data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] } },
   { path: 'company-profile', component: CompanyProfileComponent,
     canActivate: [authGuard, roleGuard], data: { roles: ['Administrator', 'SuperAdmin'] } },
+
+  // SuperAdmin — Tenant / Company management
+  { path: 'tenants', component: TenantsComponent,
+    canActivate: [authGuard, roleGuard], data: { roles: ['SuperAdmin'] } },
 
   // Fallback
   { path: '**', redirectTo: '' }

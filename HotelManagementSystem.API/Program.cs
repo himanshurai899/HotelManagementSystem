@@ -159,6 +159,7 @@ builder.Services.AddAuthorizationBuilder()
                  .AddPolicy("ManageAmenities",   policy => policy.RequireClaim("Permission", "ManageAmenities"))
                  .AddPolicy("ManageStaff",       policy => policy.RequireClaim("Permission", "ManageStaff"))
                  .AddPolicy("ManageBookings",    policy => policy.RequireClaim("Permission", "ManageBookings"))
+                 .AddPolicy("ManageTenants",    policy => policy.RequireClaim("Permission", "ManageTenants"))
                  .AddPolicy("ViewReports",       policy => policy.RequireClaim("Permission", "ViewReports"));
 
 var app = builder.Build();
@@ -184,6 +185,7 @@ app.UseStaticFiles();
 app.UseCors("AngularClient");
 
 app.UseAuthentication();
+app.UseMiddleware<HotelManagementSystem.API.Middleware.TenantResolverMiddleware>();
 app.UseAuthorization();
 
 app.MapControllers().RequireAuthorization();

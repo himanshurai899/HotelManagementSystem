@@ -78,11 +78,91 @@ All admin pages: `MatTable` list + inline form panel using `MatFormField`, `MatS
 | `BookingsComponent` | `/bookings` | Customer (own), Administrator (all) |
 | `BrowseRoomsComponent` | `/browse-rooms` | Public (no auth required) |
 
+**Booking form date-picker rules (implemented):**
+- Check-in uses `MatDatepicker` with `[min]="today"` — no past dates allowed
+- Check-in is pre-filled to the **next full hour** from now on form open
+- Check-out uses `MatDatepicker` with `[min]="minCheckOutDate()"` (a `signal<Date>`)
+- For **nightly** rooms (`allowHourlyStay = false`): checkout min = day after check-in
+- For **hourly** rooms (`allowHourlyStay = true`): checkout min = same day as check-in
+- `Room.allowHourlyStay` boolean is on `RoomDTO` and `api.models.ts` `RoomDTO` interface
+- When room selection changes, `minCheckOutDate` signal is recalculated reactively
+- `MatNativeDateModule` is imported in `BookingsComponent` alongside `MatDatepickerModule`
+
 ### ✅ Phase 7 — Routing + Unauthorized
 - All routes in `app.routes.ts` — flat, no lazy loading
 - Protected routes use `canActivate: [authGuard, roleGuard]` + `data: { roles: [...] }`
 - `UnauthorizedComponent` at `/unauthorized` — shown when `roleGuard` denies access
 - Fallback `**` → `''` (hub redirect)
+
+### ✅ Phase 8 — Billing & Payments
+| File | Purpose |
+|---|---|
+| `Shared/Models/Invoice.cs` | Invoice entity linked to `Booking` |
+| `Shared/Models/InvoiceItem.cs` | Line items on an invoice |
+| `Shared/Models/Payment.cs` | Payment entity — `BookingId`, `Amount`, `PaymentDate`, `PaymentStatus` |
+| `Shared/Models/CompanyProfile.cs` | Single-row branding/settings table — `CompanyName`, `LogoUrl`, `Address`, `GstinNumber`, `PrimaryColor`, `AccentColor`, `FontFamily` |
+| `Shared/Enums/InvoiceStatus.cs` | `Unpaid`, `Paid`, `PartiallyPaid`, `Overdue`, `Cancelled` |
+| `Shared/Enums/PaymentStatus.cs` | Payment status enum |
+| `Shared/DTOs/InvoiceDTO.cs` + `InvoiceItemDTO.cs` | Flat DTOs |
+| `Shared/DTOs/PaymentDTO.cs` | Flat DTO |
+| `Shared/DTOs/CompanyProfileDTO.cs` | Flat DTO |
+| `Shared/Utilities/InvoicePdfUtility.cs` | Static PDF generator using QuestPDF |
+| `Shared/Interfaces/IFileStorageService.cs` | Interface — `SaveAsync` / `DeleteAsync` |
+| `API/Services/LocalFileStorageService.cs` | Saves files to `wwwroot/uploads/`; returns `/uploads/{guid}{ext}` |
+| `API/Services/AzureBlobStorageService.cs` | Azure Blob Storage implementation of `IFileStorageService` |
+| `API/Controllers/InvoicesController.cs` | CRUD; Admin = all; Customer = own; `GET /{id}/pdf` returns PDF |
+| `API/Controllers/PaymentsController.cs` | CRUD; Customer = own; Administrator = all |
+| `API/Controllers/CompanyProfileController.cs` | GET (AllowAnonymous); Upsert/UploadLogo (Administrator) |
+| `component/invoices/invoices.component.ts` | `/invoices` — `data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] }` |
+| `component/payments/payments.component.ts` | `/payments` — `data: { roles: ['Customer', 'Administrator', 'SuperAdmin'] }` |
+| `component/company-profile/company-profile.component.ts` | `/company-profile` — `data: { roles: ['Administrator', 'SuperAdmin'] }` |
+
+**Extra — User Profile (implemented alongside Phase 8):**
+| File | Purpose |
+|---|---|
+| `User.cs` extended fields | `FirstName`, `LastName`, `ProfilePhotoUrl`, `IdProofType`, `IdProofNumber` |
+| `Shared/DTOs/UpdateProfileDTO.cs` | Update profile request DTO |
+| `Shared/DTOs/ChangePasswordDTO.cs` | Change password request DTO |
+| `Shared/DTOs/CreateUserDTO.cs` | Admin create-user request DTO |
+| `API/Controllers/ProfileController.cs` | `GET/PUT /api/profile`; `PUT /api/profile/password`; `PUT /api/profile/photo` |
+| `component/profile/profile.component.ts` | `/profile` — public (auth only, no role guard) |
+| `component/access-control/access-control.component.ts` | `/access-control` — unified Users + Roles + Permissions page; `data: { roles: ['Administrator', 'SuperAdmin'] }` |
+
+### ✅ Phase 9 — Multi-Tenant SaaS
+| File | Purpose |
+|---|---|
+| `Shared/Models/Tenant.cs` | Tenant entity — name, subdomain (unique), plan, active flag, createdAt |
+| `Shared/Models/UserTenant.cs` | Join entity — many-to-many user ↔ tenant; `TenantRole?` for tenant-scoped roles |
+| `Shared/Enums/TenantPlan.cs` | `Free`, `Pro`, `Enterprise` |
+| `Shared/DTOs/TenantDTO.cs` | Flat DTO |
+| `Shared/DTOs/UserTenantDTO.cs` | Flat DTO — `string UserName`, `string TenantName` (denormalized) |
+| `API/Middleware/TenantResolverMiddleware.cs` | Reads `TenantId` from JWT claim → falls back to `X-Tenant-Id` header; sets `HttpContext.Items["TenantId"]` |
+| `API/Controllers/TenantsController.cs` | CRUD + user-assignment endpoints; `[Authorize(Roles = "SuperAdmin")]` |
+| `component/tenants/tenants.component.ts` | Angular CRUD page + expand-to-see-users panel; route `/tenants`, `data: { roles: ['SuperAdmin'] }` |
+
+**Multi-Tenant extras in other files:**
+- `TenantId` FK added to: `Room`, `Booking`, `Staff`, `RoomType`, `Amenity`, `Invoice`
+- `AccountController.Login` includes `TenantId` claim (primary tenant from `UserTenant` table)
+- `ManageTenants` policy registered in `Program.cs`
+- `SuperAdmin` role (Id = 4) seeded with all permission claims
+- `TenantDTO` includes extra fields: `CurrencyCode` (ISO 4217) and `Locale` (IETF locale tag)
+- `DefaultCurrencyDTO` added to `Shared/DTOs/` and mirrored as TypeScript interface in `api.models.ts`
+
+**⚠️ Known gap:** `GetAll()` in tenanted controllers does not yet filter by `TenantId` — `Administrator` sees cross-tenant data. Apply TenantId filter before returning lists in: `RoomsController`, `BookingsController`, `StaffController`, `RoomTypesController`, `AmenitiesController`, `InvoicesController`.
+
+### 🔄 Phase 12 — Advanced Booking (In Progress)
+| File | Purpose |
+|---|---|
+| `Room.AllowHourlyStay` (`bool`) | Added to `Room.cs`, `RoomDTO.cs`, `api.models.ts`; migration applied |
+| `Room.PricePerNight` (`decimal`) | Added to `Room.cs`, `RoomDTO.cs`, `api.models.ts`; migration applied |
+| `GET /api/bookings/calendar` | Returns booking calendar entries for a given year+month |
+| `PUT /api/bookings/{id}/approve` | Approve a pending booking — `[Authorize(Policy = "ManageBookings")]` |
+| `PUT /api/bookings/{id}/reject` | Reject a pending booking — `[Authorize(Policy = "ManageBookings")]` |
+| Booking overlap conflict guard | `POST /api/bookings` rejects overlapping reservations for the same room |
+| `component/booking-calendar/booking-calendar.component.ts` | `/booking-calendar` — `data: { roles: ['Administrator', 'SuperAdmin'] }`; month/year nav |
+| `BookingCalendarEntry` TypeScript interface | `api.models.ts` — `roomId`, `roomNumber`, `customerName`, `checkInDate`, `checkOutDate`, `status` |
+
+**Remaining in Phase 12:** Multi-Room Booking (12a), History-Based Rebooking (12b), full Hourly Stay with `HourlyRate` + time pickers (12c), Room Blocking (12d).
 
 ---
 
@@ -154,15 +234,17 @@ All admin pages: `MatTable` list + inline form panel using `MatFormField`, `MatS
 **Seeded Roles & Claims:**
 | Id | Role | Permission Claims |
 |---|---|---|
-| 1 | Administrator | ManageUsers, ManageRoles, ManageRooms |
+| 1 | Administrator | ManageUsers, ManageRoles, ManageRooms, ManageRoomTypes, ManageAmenities, ManageStaff, ManageBookings, ViewReports |
 | 2 | Guest | ViewDashboard |
 | 3 | Customer | MakeBooking |
+| 4 | SuperAdmin | All permissions including ManageTenants |
 
 **Seeded Users:**
 | Username | Email | Role |
 |---|---|---|
 | `admin` | admin@example.com | Administrator |
 | `guest` | guest@example.com | Guest |
+| `superadmin` | superadmin@example.com | SuperAdmin |
 
 New registrations always get: role `Customer` + claim `Department:Sales`.
 
@@ -286,6 +368,13 @@ New registrations always get: role `Customer` + claim `Department:Sales`.
 | `ManageRooms` | `Permission = "ManageRooms"` |
 | `ManageRoles` | `Permission = "ManageRoles"` |
 | `ManageUsers` | `Permission = "ManageUsers"` |
+| `ManagePermissions` | `Permission = "ManagePermissions"` |
+| `ManageRoomTypes` | `Permission = "ManageRoomTypes"` |
+| `ManageAmenities` | `Permission = "ManageAmenities"` |
+| `ManageStaff` | `Permission = "ManageStaff"` |
+| `ManageBookings` | `Permission = "ManageBookings"` |
+| `ManageTenants` | `Permission = "ManageTenants"` |
+| `ViewReports` | `Permission = "ViewReports"` |
 
 ---
 
@@ -341,6 +430,8 @@ These rules are derived from `3-architectural-domains.json` and must be respecte
 - ✅ Routes are added to `app.routes.ts` — no separate routing modules
 - ✅ State managed with `signal()` — do not introduce NgRx or other state libraries
 - ✅ `AuthService` is the single source of truth for auth state — do not duplicate token logic
+- ✅ Date fields in forms use `MatDatepicker` + `MatNativeDateModule` — never plain `<input type="date">`
+- ✅ Booking check-in defaults to next full hour; check-out min is driven by `Room.allowHourlyStay` signal
 
 ### Shared Library
 - ✅ Models, DTOs, enums, interfaces, repositories, and DbContext all live in `HotelManagementSystem.Shared`

@@ -1,32 +1,127 @@
 .tab-actions { display: flex; justify-content: flex-end; margin-bottom: 16px; }
 
-.create-card { margin-bottom: 16px; }
-
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 12px;
-  padding: 8px 0;
-}
+.users-card { border-radius: 12px; overflow: hidden; }
 
 .center { display: flex; justify-content: center; padding: 32px; }
 
-.user-icon { margin-right: 8px; color: #7986cb; }
-.user-name { font-weight: 500; }
+// ── Panel header ──────────────────────────────────────────────────────────────
 
-.role-chip { font-size: 11px; margin: 0 4px; }
-.role-chip--superadmin { background: #fce4ec !important; }
-.role-chip--administrator { background: #e8eaf6 !important; }
-.role-chip--customer { background: #e0f2f1 !important; }
-.role-chip--guest { background: #fff8e1 !important; }
+.panel-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
 
-.user-detail { padding: 12px 0; }
-.user-detail p { display: flex; align-items: center; gap: 8px; margin: 4px 0; color: #555; }
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
 
-.section-label { font-weight: 600; font-size: 12px; color: #888; text-transform: uppercase; margin: 12px 0 6px; }
+.avatar--initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #5c6bc0, #7986cb);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
 
-.chips-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.user-names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 
-.add-btn { font-size: 12px; height: 28px; line-height: 28px; padding: 0 10px; }
+  .display-name { font-weight: 600; font-size: 14px; }
+  .username-sub { font-size: 11px; color: #888; }
+}
+
+.panel-desc {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+
+  .email-text { font-size: 13px; color: #555; }
+  .role-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+}
+
+// ── Expanded detail ───────────────────────────────────────────────────────────
+
+.user-detail { padding: 8px 4px 4px; }
+
+.detail-row {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #555;
+
+  mat-icon { font-size: 16px; width: 16px; height: 16px; color: #888; }
+}
+
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: #7986cb;
+  margin: 14px 0 6px;
+}
+
+.chips-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  padding-bottom: 8px;
+}
+
+.empty-hint { font-size: 12px; color: #bbb; font-style: italic; }
+
+.tenant-role { font-size: 11px; color: #999; margin-left: 2px; }
+
+.inline-select {
+  width: 150px;
+  font-size: 12px;
+
+  // suppress the empty subscript area so the field doesn't add extra height
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none !important; }
+  ::ng-deep .mat-mdc-text-field-wrapper { padding-bottom: 0; }
+}
+
+.role-chip { font-size: 11px; margin: 0; }
+.role-chip--superadmin   { background: #fce4ec !important; color: #880e4f !important; }
+.role-chip--administrator { background: #e8eaf6 !important; color: #283593 !important; }
+.role-chip--customer     { background: #e0f2f1 !important; color: #004d40 !important; }
+.role-chip--guest        { background: #fff8e1 !important; color: #827717 !important; }
+
+.add-claim-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 8px 0 4px;
+
+  .claim-input { width: 180px; font-size: 0.85rem; }
+}
 
 .delete-row { margin-top: 16px; }

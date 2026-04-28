@@ -33,7 +33,9 @@
           <mat-card-subtitle>{{ getTypeName(room.roomTypeId) }}</mat-card-subtitle>
         </mat-card-header>
         <mat-card-content>
-          <div class="price">From ${{ getBasePrice(room.roomTypeId) }}/night</div>
+          <div class="price">
+            From {{ getBasePrice(room.roomTypeId) | currency:currencySvc.currencyCode():'symbol':'1.2-2':currencySvc.locale() }}/night
+          </div>
           <mat-chip [color]="room.isAvailable ? 'primary' : 'warn'" highlighted>
             {{ room.isAvailable ? 'Available' : 'Occupied' }}
           </mat-chip>

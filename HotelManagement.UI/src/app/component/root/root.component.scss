@@ -252,6 +252,140 @@
 
 .spacer { flex: 1; }
 
+// ── Tenant pill button (topbar, SuperAdmin only) ──────────────────
+.tenant-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 12px 0 10px;
+  margin-right: 10px;
+  border: 1.5px solid #c5cae9;
+  border-radius: 20px;
+  background: #f0f2ff;
+  color: #1a237e;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.2px;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    background: #e8eaf6;
+    border-color: #3f51b5;
+    box-shadow: 0 2px 8px rgba(63, 81, 181, 0.14);
+  }
+
+  &--active {
+    background: #e8eaf6;
+    border-color: #3f51b5;
+    box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.12);
+  }
+
+  &--static {
+    cursor: default;
+    pointer-events: none;
+    &:hover {
+      background: #f0f2ff;
+      border-color: #c5cae9;
+      box-shadow: none;
+    }
+  }
+
+  .tenant-pill-icon {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    color: #3f51b5;
+    opacity: 0.9;
+  }
+
+  .tenant-pill-label {
+    max-width: 140px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #1a237e;
+  }
+
+  .tenant-pill-chevron {
+    font-size: 18px;
+    height: 18px;
+    width: 18px;
+    color: #3f51b5;
+    opacity: 0.7;
+    transition: transform 0.2s;
+  }
+}
+
+// ── Tenant dropdown panel ──────────────────────────────────────────
+::ng-deep .tenant-menu-panel {
+  min-width: 200px;
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.14) !important;
+
+  .tenant-menu-header {
+    padding: 10px 16px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #9e9e9e;
+    pointer-events: none;
+  }
+
+  .tenant-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+
+    .tmi-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #e0e0e0;
+      flex-shrink: 0;
+    }
+
+    .tmi-check {
+      margin-left: auto;
+      font-size: 16px;
+      height: 16px;
+      width: 16px;
+      color: #3f51b5;
+    }
+
+    &--active {
+      background: #f0f2ff;
+      font-weight: 600;
+      color: #3f51b5;
+
+      .tmi-dot { background: #3f51b5; }
+    }
+  }
+
+  .tenant-menu-clear {
+    color: #e53935;
+    mat-icon { color: #e53935; }
+  }
+}
+
+// ── Tenant-scope banner (below topbar) ────────────────────────────
+.tenant-banner {
+  background: #e8f5e9;
+  color: #2e7d32;
+  border-bottom: 1px solid #a5d6a7;
+  padding: 6px 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  mat-icon { font-size: 18px; height: 18px; width: 18px; }
+  button { margin-left: auto; }
+}
+
 // ── User pill button (topbar) ──────────────────────────────────────
 .user-pill {
   display: flex;
@@ -377,6 +511,7 @@
 
   .udp-badge {
     display: inline-block;
+    align-self: flex-start;
     margin-top: 3px;
     padding: 1px 8px;
     border-radius: 20px;
@@ -385,6 +520,7 @@
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: #fff;
     letter-spacing: 0.3px;
+    white-space: nowrap;
   }
 }
 

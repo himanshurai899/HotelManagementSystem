@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,13 +12,14 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from '../../services/api.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { RoomDTO, RoomTypeDTO } from '../../model/api.models';
 
 @Component({
   selector: 'app-rooms',
   standalone: true,
   imports: [
-    ReactiveFormsModule, MatTableModule, MatButtonModule, MatIconModule,
+    ReactiveFormsModule, CurrencyPipe, MatTableModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatCheckboxModule, MatProgressSpinnerModule, MatSnackBarModule
   ],
@@ -28,18 +30,20 @@ export class RoomsComponent implements OnInit {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
   private snack = inject(MatSnackBar);
+  readonly currencySvc = inject(TenantCurrencyService);
 
   rooms = signal<RoomDTO[]>([]);
   roomTypes = signal<RoomTypeDTO[]>([]);
   loading = signal(true);
   showForm = signal(false);
   editId = signal<number | null>(null);
-  displayedColumns = ['roomNumber', 'roomTypeName', 'isAvailable', 'actions'];
+  displayedColumns = ['roomNumber', 'roomTypeName', 'pricePerNight', 'isAvailable', 'actions'];
 
   form = this.fb.group({
-    roomNumber: ['', Validators.required],
-    roomTypeId: [0, Validators.required],
-    isAvailable: [true]
+    roomNumber:   ['', Validators.required],
+    roomTypeId:   [0, Validators.required],
+    isAvailable:  [true],
+    pricePerNight:[0, [Validators.required, Validators.min(0)]]
   });
 
   ngOnInit() {
@@ -58,10 +62,13 @@ export class RoomsComponent implements OnInit {
   openForm(room?: RoomDTO) {
     if (room) {
       this.editId.set(room.id);
-      this.form.patchValue({ roomNumber: room.roomNumber, roomTypeId: room.roomTypeId, isAvailable: room.isAvailable });
+      this.form.patchValue({
+        roomNumber: room.roomNumber, roomTypeId: room.roomTypeId,
+        isAvailable: room.isAvailable, pricePerNight: room.pricePerNight ?? 0
+      });
     } else {
       this.editId.set(null);
-      this.form.reset({ isAvailable: true });
+      this.form.reset({ isAvailable: true, pricePerNight: 0 });
     }
     this.showForm.set(true);
   }

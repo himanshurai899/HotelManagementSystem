@@ -87,6 +87,14 @@ export const menus: Menu[] = [
         icon: 'book_online'
     },
     {
+        route: 'booking-calendar',
+        title: 'Booking Calendar',
+        description: 'Room availability calendar view',
+        category: 'Reservations',
+        requiredRoles: ['Administrator', 'SuperAdmin'],
+        icon: 'calendar_month'
+    },
+    {
         route: 'invoices',
         title: 'Invoices',
         description: 'View and manage invoices',
@@ -111,6 +119,14 @@ export const menus: Menu[] = [
         icon: 'business'
     },
     {
+        route: 'tenants',
+        title: 'Tenants',
+        description: 'Manage companies & subscriptions',
+        category: 'Management',
+        requiredRoles: ['SuperAdmin'],
+        icon: 'domain'
+    },
+    {
         route: 'profile',
         title: 'My Profile',
         description: 'View and edit your profile',
@@ -127,5 +143,6 @@ export const categoryMeta: Record<string, { icon: string }> = {
     'People':       { icon: 'groups' },
     'Reservations': { icon: 'event_available' },
     'Billing':      { icon: 'account_balance_wallet' },
+    'Management':   { icon: 'domain' },
     'Account':      { icon: 'manage_accounts' },
 };

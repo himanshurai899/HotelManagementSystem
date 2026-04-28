@@ -1,5 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { CurrencyPipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,13 +10,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from '../../services/api.service';
+import { TenantCurrencyService } from '../../services/tenant-currency.service';
 import { RoomTypeDTO } from '../../model/api.models';
 
 @Component({
   selector: 'app-room-types',
   standalone: true,
   imports: [
-    ReactiveFormsModule, MatTableModule, MatButtonModule, MatIconModule,
+    ReactiveFormsModule, CurrencyPipe, MatTableModule, MatButtonModule, MatIconModule,
     MatCardModule, MatFormFieldModule, MatInputModule, MatProgressSpinnerModule, MatSnackBarModule
   ],
   templateUrl: './room-types.component.html',
@@ -25,6 +27,7 @@ export class RoomTypesComponent implements OnInit {
   private api = inject(ApiService);
   private fb = inject(FormBuilder);
   private snack = inject(MatSnackBar);
+  readonly currencySvc = inject(TenantCurrencyService);
 
   items = signal<RoomTypeDTO[]>([]);
   loading = signal(true);

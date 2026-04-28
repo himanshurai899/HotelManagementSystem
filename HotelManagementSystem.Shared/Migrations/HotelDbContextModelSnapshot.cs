@@ -38,10 +38,15 @@ namespace HotelManagementSystem.Shared.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Amenities");
                 });
@@ -66,6 +71,9 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("TotalPrice")
                         .HasColumnType("decimal(18,2)");
 
@@ -75,6 +83,8 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("RoomId");
+
+                    b.HasIndex("TenantId");
 
                     b.HasIndex("UserId");
 
@@ -145,12 +155,17 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("TotalAmount")
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BookingId");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Invoices");
                 });
@@ -278,8 +293,14 @@ namespace HotelManagementSystem.Shared.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("AllowHourlyStay")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsAvailable")
                         .HasColumnType("bit");
+
+                    b.Property<decimal>("PricePerNight")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("RoomNumber")
                         .IsRequired()
@@ -288,12 +309,17 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.Property<int>("RoomTypeId")
                         .HasColumnType("int");
 
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RoomNumber")
                         .IsUnique();
 
                     b.HasIndex("RoomTypeId");
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("Rooms");
                 });
@@ -331,10 +357,15 @@ namespace HotelManagementSystem.Shared.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Name")
                         .IsUnique();
+
+                    b.HasIndex("TenantId");
 
                     b.ToTable("RoomTypes");
                 });
@@ -370,12 +401,71 @@ namespace HotelManagementSystem.Shared.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
                         .IsUnique();
 
+                    b.HasIndex("TenantId");
+
                     b.ToTable("Staff");
+                });
+
+            modelBuilder.Entity("HotelManagementSystem.Shared.Models.Tenant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CurrencyCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Locale")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Plan")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Subdomain")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Subdomain")
+                        .IsUnique();
+
+                    b.ToTable("Tenants");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CurrencyCode = "INR",
+                            IsActive = true,
+                            Locale = "en-IN",
+                            Name = "Default",
+                            Plan = 2,
+                            Subdomain = "default"
+                        });
                 });
 
             modelBuilder.Entity("HotelManagementSystem.Shared.Models.User", b =>
@@ -482,13 +572,13 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 1,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "37693ae5-b8d7-4f29-98df-74a94638899e",
+                            ConcurrencyStamp = "2d12eced-4667-4eba-b331-30e62a06b603",
                             Email = "admin@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "ADMIN@EXAMPLE.COM",
                             NormalizedUserName = "ADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEInYhijSQ+EqAb/xqIy0afIqI/ITm+WAc2TckVQyktOudTsdh4a62lqXqCGwHVAMtA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAEIhp3CB0+h53lg8FlcfLbhPogEwsjeEoLzu6WmDtPGYFGVmGFVnx1bZwglba+dUYQg==",
                             PhoneNumber = "1234567890",
                             PhoneNumberConfirmed = false,
                             RoleId = 1,
@@ -500,13 +590,13 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 2,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "2c005a43-e9fb-4b50-9084-5e2746e59934",
+                            ConcurrencyStamp = "b247982a-9750-4231-aa61-1fc947ea004f",
                             Email = "guest@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "GUEST@EXAMPLE.COM",
                             NormalizedUserName = "GUEST",
-                            PasswordHash = "AQAAAAIAAYagAAAAEI7Fjc91/INmdM40ULwKtqIQFju3adaTEHP4yJZ/6wr0qWau2h5jmTvkLS0jm9Lx0A==",
+                            PasswordHash = "AQAAAAIAAYagAAAAECtuPO9kk+e5QNnt/3R9e3guzJgAO4ZvbZgEDO8P4kB+rJN/gwLHF2BnDT9Va3DBhw==",
                             PhoneNumber = "0987654321",
                             PhoneNumberConfirmed = false,
                             RoleId = 2,
@@ -518,19 +608,62 @@ namespace HotelManagementSystem.Shared.Migrations
                         {
                             Id = 3,
                             AccessFailedCount = 0,
-                            ConcurrencyStamp = "351fda4c-bbb4-4f1c-9eae-a6fc7716507c",
+                            ConcurrencyStamp = "b317d45e-e06c-49ef-bf7e-09279c8bb704",
                             Email = "superadmin@example.com",
                             EmailConfirmed = true,
                             LockoutEnabled = false,
                             NormalizedEmail = "SUPERADMIN@EXAMPLE.COM",
                             NormalizedUserName = "SUPERADMIN",
-                            PasswordHash = "AQAAAAIAAYagAAAAEI79s9jSfXHqIqU92aueAmlxWy5DzLOBoXf1b9Lis79RDnda6zVU/sO3jiLgbbXVrA==",
+                            PasswordHash = "AQAAAAIAAYagAAAAENMt1n5erBKT0/lbyP7Issg4lhLqwaMCJchc95gkuK8NLW24z3veHqr8JxN4yk1lvg==",
                             PhoneNumber = "1112223333",
                             PhoneNumberConfirmed = false,
                             RoleId = 4,
                             SecurityStamp = "SUPERADMIN-STATIC-STAMP-0001",
                             TwoFactorEnabled = false,
                             UserName = "superadmin"
+                        });
+                });
+
+            modelBuilder.Entity("HotelManagementSystem.Shared.Models.UserTenant", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TenantId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TenantRole")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "TenantId");
+
+                    b.HasIndex("TenantId");
+
+                    b.ToTable("UserTenants");
+
+                    b.HasData(
+                        new
+                        {
+                            UserId = 1,
+                            TenantId = 1,
+                            JoinedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            TenantRole = "Administrator"
+                        },
+                        new
+                        {
+                            UserId = 2,
+                            TenantId = 1,
+                            JoinedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
+                        },
+                        new
+                        {
+                            UserId = 3,
+                            TenantId = 1,
+                            JoinedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            TenantRole = "Administrator"
                         });
                 });
 
@@ -812,12 +945,29 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("HotelManagementSystem.Shared.Models.Amenity", b =>
+                {
+                    b.HasOne("HotelManagementSystem.Shared.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("HotelManagementSystem.Shared.Models.Booking", b =>
                 {
                     b.HasOne("HotelManagementSystem.Shared.Models.Room", "Room")
                         .WithMany("Bookings")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagementSystem.Shared.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("HotelManagementSystem.Shared.Models.User", "User")
@@ -827,6 +977,8 @@ namespace HotelManagementSystem.Shared.Migrations
                         .IsRequired();
 
                     b.Navigation("Room");
+
+                    b.Navigation("Tenant");
 
                     b.Navigation("User");
                 });
@@ -839,7 +991,15 @@ namespace HotelManagementSystem.Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HotelManagementSystem.Shared.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("Booking");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("HotelManagementSystem.Shared.Models.InvoiceItem", b =>
@@ -872,7 +1032,15 @@ namespace HotelManagementSystem.Shared.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("HotelManagementSystem.Shared.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.Navigation("RoomType");
+
+                    b.Navigation("Tenant");
                 });
 
             modelBuilder.Entity("HotelManagementSystem.Shared.Models.RoomAmenity", b =>
@@ -894,6 +1062,28 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.Navigation("Room");
                 });
 
+            modelBuilder.Entity("HotelManagementSystem.Shared.Models.RoomType", b =>
+                {
+                    b.HasOne("HotelManagementSystem.Shared.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
+            modelBuilder.Entity("HotelManagementSystem.Shared.Models.Staff", b =>
+                {
+                    b.HasOne("HotelManagementSystem.Shared.Models.Tenant", "Tenant")
+                        .WithMany()
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+                });
+
             modelBuilder.Entity("HotelManagementSystem.Shared.Models.User", b =>
                 {
                     b.HasOne("HotelManagementSystem.Shared.Models.Role", "Role")
@@ -903,6 +1093,25 @@ namespace HotelManagementSystem.Shared.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("HotelManagementSystem.Shared.Models.UserTenant", b =>
+                {
+                    b.HasOne("HotelManagementSystem.Shared.Models.Tenant", "Tenant")
+                        .WithMany("UserTenants")
+                        .HasForeignKey("TenantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelManagementSystem.Shared.Models.User", "User")
+                        .WithMany("UserTenants")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tenant");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -988,9 +1197,16 @@ namespace HotelManagementSystem.Shared.Migrations
                     b.Navigation("Rooms");
                 });
 
+            modelBuilder.Entity("HotelManagementSystem.Shared.Models.Tenant", b =>
+                {
+                    b.Navigation("UserTenants");
+                });
+
             modelBuilder.Entity("HotelManagementSystem.Shared.Models.User", b =>
                 {
                     b.Navigation("Bookings");
+
+                    b.Navigation("UserTenants");
                 });
 #pragma warning restore 612, 618
         }
