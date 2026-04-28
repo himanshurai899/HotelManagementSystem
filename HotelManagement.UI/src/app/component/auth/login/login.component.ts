@@ -5,7 +5,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { ApiService } from '../../../services/api.service';
 import { AuthService } from '../../../services/auth.service';
-import { AuthResponse } from '../../../model/api.models';
+import { AuthResponse, UserDTO } from '../../../model/api.models';
+import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -46,9 +47,27 @@ export class LoginComponent {
         }
         this.auth.setToken(res.token);
         const roles = this.auth.getRoles();
-        if (roles.includes('Administrator') || roles.includes('SuperAdmin')) this.router.navigate(['/admin-dashboard']);
-        else if (roles.includes('Customer')) this.router.navigate(['/customer-dashboard']);
-        else this.router.navigate(['/guest-dashboard']);
+        const destination = roles.includes('Administrator') || roles.includes('SuperAdmin')
+          ? '/admin-dashboard'
+          : roles.includes('Customer') ? '/customer-dashboard' : '/guest-dashboard';
+
+        // Eagerly load the user profile so the navbar shows the correct
+        // name and avatar immediately — without needing to visit /profile first.
+        this.api.get<UserDTO>('profile').subscribe({
+          next: p => {
+            const origin = environment.apiBaseUrl.replace(/\/api\/?$/, '');
+            const photoUrl = p.profilePhotoUrl
+              ? (p.profilePhotoUrl.startsWith('http') ? p.profilePhotoUrl : `${origin}${p.profilePhotoUrl}`)
+              : null;
+            this.auth.setProfilePhotoUrl(photoUrl);
+            const fullName = [p.firstName, p.lastName].filter(Boolean).join(' ') || p.username;
+            this.auth.setFullName(fullName);
+          },
+          // ignore errors — nav proceeds regardless
+          error: () => {}
+        });
+
+        this.router.navigate([destination]);
       },
       error: () => {
         this.error.set('Invalid username or password. Please try again.');
